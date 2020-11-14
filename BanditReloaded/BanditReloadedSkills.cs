@@ -42,31 +42,24 @@ namespace EntityStates.BanditReloaded
 		public override void OnEnter()
 		{
             base.OnEnter();
-            //this.defaultCrosshairPrefab = base.characterBody.crosshairPrefab;
-            /*if (Blast.individualReload && Blast.initialReloadDuration != base.skillLocator.primary.baseRechargeInterval)
-            {
-                float cdr = base.skillLocator.primary.CalculateFinalRechargeInterval() / base.skillLocator.primary.baseRechargeInterval;
-                base.characterBody.skillLocator.primary.rechargeStopwatch = cdr * (base.skillLocator.primary.baseRechargeInterval - Blast.initialReloadDuration);
-            }
-            else
-            {*/
-            base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
-            //}
+
             base.AddRecoil(-1f * Blast.recoilAmplitude, -2f * Blast.recoilAmplitude, -0.5f * Blast.recoilAmplitude, 0.5f * Blast.recoilAmplitude);
             if (base.characterBody.skillLocator.primary.stock > 0 || Blast.noReload)
             {
                 this.maxDuration = Blast.baseMaxDuration / this.attackSpeedStat;
                 this.minDuration = Blast.baseMinDuration / this.attackSpeedStat;
                 Util.PlayScaledSound(Blast.attackSoundString, base.gameObject, 0.85f);
+                base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
             }
             else
             {
                 this.maxDuration = Blast.dryFireDuration;
                 this.minDuration = Blast.dryFireDuration;
                 base.characterBody.skillLocator.primary.stock = 0;
-                //base.characterBody.crosshairPrefab = Blast.emptyCrosshairPrefab;
                 Util.PlayScaledSound(Blast.attackSoundString, base.gameObject, 1f);
                 Util.PlayScaledSound("Play_commando_M2_grenade_throw", base.gameObject, 1.2f);
+                dryFire = true;
+                reloadTimer = Mathf.Max(base.characterBody.skillLocator.primary.rechargeStopwatch, Blast.dryFireDuration);
             }
 			
 			Ray aimRay = base.GetAimRay();
@@ -133,6 +126,10 @@ namespace EntityStates.BanditReloaded
 		public override void FixedUpdate()
 		{
 			base.FixedUpdate();
+            if (dryFire)
+            {
+                base.characterBody.skillLocator.primary.rechargeStopwatch = reloadTimer;
+            }
 			this.buttonReleased |= !base.inputBank.skill1.down;
 			if (base.fixedAge >= this.maxDuration && base.isAuthority)
 			{
@@ -175,6 +172,9 @@ namespace EntityStates.BanditReloaded
 		private float minDuration;
 		private bool buttonReleased;
         public bool isMash = false;
+
+        private bool dryFire = false;
+        private float reloadTimer = 0f;
 
         //public static GameObject emptyCrosshairPrefab;
         //private GameObject defaultCrosshairPrefab;
@@ -420,16 +420,6 @@ namespace EntityStates.BanditReloaded
         public override void OnEnter()
         {
             base.OnEnter();
-            //this.defaultCrosshairPrefab = base.characterBody.crosshairPrefab;
-            /*if (Scatter.individualReload && Scatter.initialReloadDuration != base.skillLocator.primary.baseRechargeInterval)
-            {
-                float cdr = base.skillLocator.primary.CalculateFinalRechargeInterval() / base.skillLocator.primary.baseRechargeInterval;
-                base.characterBody.skillLocator.primary.rechargeStopwatch = cdr * (base.skillLocator.primary.baseRechargeInterval - Scatter.initialReloadDuration);
-            }
-            else
-            {*/
-            base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
-            //}
 
             base.AddRecoil(-1f * Scatter.recoilAmplitude, -2f * Scatter.recoilAmplitude, -0.5f * Scatter.recoilAmplitude, 0.5f * Scatter.recoilAmplitude);
 
@@ -438,6 +428,7 @@ namespace EntityStates.BanditReloaded
                 this.maxDuration = Scatter.baseMaxDuration / this.attackSpeedStat;
                 this.minDuration = Scatter.baseMinDuration / this.attackSpeedStat;
                 Util.PlayScaledSound(Scatter.attackSoundString, base.gameObject, 0.8f);
+                base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
             }
             else
             {
@@ -446,7 +437,9 @@ namespace EntityStates.BanditReloaded
                 base.characterBody.skillLocator.primary.stock = 0;
                 //base.characterBody.crosshairPrefab = Scatter.emptyCrosshairPrefab;
                 Util.PlayScaledSound(Scatter.attackSoundString, base.gameObject, 1f);
-                Util.PlayScaledSound("Play_commando_M2_grenade_throw", base.gameObject,1.2f);
+                Util.PlayScaledSound("Play_commando_M2_grenade_throw", base.gameObject, 1.2f);
+                dryFire = true;
+                reloadTimer = Mathf.Max(base.characterBody.skillLocator.primary.rechargeStopwatch, Scatter.dryFireDuration);
             }
 
             Ray aimRay = base.GetAimRay();
@@ -528,6 +521,10 @@ namespace EntityStates.BanditReloaded
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+            if (dryFire)
+            {
+                base.characterBody.skillLocator.primary.rechargeStopwatch = reloadTimer;
+            }
             this.buttonReleased |= !base.inputBank.skill1.down;
             if (base.fixedAge >= this.maxDuration && base.isAuthority)
             {
@@ -559,18 +556,16 @@ namespace EntityStates.BanditReloaded
         public static uint pelletCount;
         public static float procCoefficient;
         public static float range;
-        //public static bool individualReload;
         public static bool vanillaBrainstalks;
         public static bool penetrateEnemies;
         private float maxDuration;
         private float minDuration;
         private bool buttonReleased;
-        //public static float initialReloadDuration;
         public static bool noReload;
         public static float dryFireDuration;
 
-        //public static GameObject emptyCrosshairPrefab;
-        //private GameObject defaultCrosshairPrefab;
+        private bool dryFire = false;
+        private float reloadTimer = 0f;
     }
 
     public class Assassinate : BaseState

@@ -22,17 +22,13 @@ namespace BanditReloaded
 {
     [BepInDependency("com.bepis.r2api")]
     [BepInDependency("com.ThinkInvisible.ClassicItems", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("com.Moffein.BanditReloaded_v2", "Bandit Reloaded v2", "2.3.0")]
+    [BepInPlugin("com.Moffein.BanditReloaded_v2", "Bandit Reloaded v2", "2.2.1")]
     [R2API.Utils.R2APISubmoduleDependency(nameof(SurvivorAPI), nameof(LoadoutAPI), nameof(PrefabAPI), nameof(BuffAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(DotAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     //[NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
     class BanditReloaded : BaseUnityPlugin
     {
         #region cfg
-        /*private static ConfigEntry<bool> useBodyClone;
-        private static ConfigEntry<bool> useBodyClone2;
-        private static ConfigEntry<bool> useBodyClone3;
-        private static ConfigEntry<bool> useBodyClone4;*/
         bool useBodyClone = true;
 
         public static SurvivorDef item;
@@ -61,6 +57,7 @@ namespace BanditReloaded
         private static ConfigEntry<bool> blastFalloff;
         private static ConfigEntry<float> blastRadius;
         private static ConfigEntry<float> blastMashSpread;
+        private static ConfigEntry<float> blastRecoil;
 
         private static ConfigEntry<float> thermiteDamage;
         private static ConfigEntry<float> thermiteBurnDuration;
@@ -110,6 +107,7 @@ namespace BanditReloaded
         private static ConfigEntry<bool> scatterPenetrate;
         private static ConfigEntry<float> scatterRange;
         private static ConfigEntry<float> scatterRadius;
+        private static ConfigEntry<float> scatterRecoil;
 
         private static ConfigEntry<float> acidDamage;
         private static ConfigEntry<float> acidWeakDuration;
@@ -2113,7 +2111,7 @@ namespace BanditReloaded
             classicOutro = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use RoR1 Outro"), false, new ConfigDescription("Uses Bandit's RoR1 ending."));
             asEnabled = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Enable unused Assassinate utility*"), false, new ConfigDescription("Enables the Assassinate Utility skill. This skill was disabled due to being poorly coded and not fitting Bandit's kit, but it's left in in case you want to use it. This skill can only be used if Assassinate is enabled on the host."));
 
-            blastDamage = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Damage"), 2.3f, new ConfigDescription("How much damage Blast deals."));
+            blastDamage = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Damage"), 2.5f, new ConfigDescription("How much damage Blast deals."));
             blastMaxDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Fire Rate"), 0.3f, new ConfigDescription("Time between shots."));
             blastMinDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Min Duration"), 0.2f, new ConfigDescription("How soon you can fire another shot if you mash."));
             blastDryEnabled = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Enable Dryfire"), true, new ConfigDescription("Allow Blast to be fired on an empty mag."));
@@ -2123,6 +2121,7 @@ namespace BanditReloaded
             blastForce = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Force"), 600f, new ConfigDescription("Push force per shot."));
             blastSpread = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Spread"), 0f, new ConfigDescription("Amount of spread with added each shot."));
             blastMashSpread = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Mash Spread"), 0.4f, new ConfigDescription("Amount of spread with added each shot when mashing."));
+            blastRecoil = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Recoil"), 1.4f, new ConfigDescription("How hard the gun kicks when shooting."));
             blastRange = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Range"), 250f, new ConfigDescription("How far Blast can reach."));
             blastFalloff = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Use Falloff"), true, new ConfigDescription("Shots deal less damage over range."));
             blastStock = base.Config.Bind<int>(new ConfigDefinition("10 - Primary - Blast", "Stock"), 8, new ConfigDescription("How many shots can be fired before reloading."));
@@ -2142,6 +2141,7 @@ namespace BanditReloaded
             scatterRadius = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Shot Radius"), 0.4f, new ConfigDescription("How wide Scatter's pellets are."));
             scatterForce = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Force"), 200f, new ConfigDescription("Push force per pellet."));
             scatterSpread = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Spread"), 2.5f, new ConfigDescription("Size of the pellet spread."));
+            scatterRecoil = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Recoil"), 2.6f, new ConfigDescription("How hard the gun kicks when shooting."));
             scatterRange = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Range"), 120f, new ConfigDescription("How far Scatter can reach."));
             scatterStock = base.Config.Bind<int>(new ConfigDefinition("11 - Primary - Scatter", "Stock"), 5, new ConfigDescription("How many shots Scatter can hold."));
             scatterRechargeInterval = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Reload Time"), 2.5f, new ConfigDescription("How much time it takes to reload. Set to 0 to disable reloading."));
@@ -2149,7 +2149,7 @@ namespace BanditReloaded
             //scatterInitialRechargeInterval = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Initial Reload Time"), 1f, new ConfigDescription("How much time it takes to reload the first shot. Does nothing unless Reload Individually is enabled."));
             scatterVanillaBrainstalks = base.Config.Bind<bool>(new ConfigDefinition("11 - Primary - Scatter", "Use Vanilla Brainstalks Behavior"), true, new ConfigDescription("Disables infinite ammo when Brainstalks is active."));
 
-            thermiteDamage = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Thermite Bomb", "Damage"), 2.4f, new ConfigDescription("How much damage Thermite Bomb deals."));
+            thermiteDamage = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Thermite Bomb", "Damage"), 2.7f, new ConfigDescription("How much damage Thermite Bomb deals."));
             thermiteBurnDamageMult = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Thermite Bomb", "Burn Damage*"), 1f, new ConfigDescription("Multiplier for Thermite burn damage."));
             thermiteBurnDuration = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Thermite Bomb", "Burn Duration*"), 10f, new ConfigDescription("How long the burn lasts for."));
             thermiteRadius = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Thermite Bomb", "Radius*"), 8f, new ConfigDescription("How large the explosion is."));
@@ -2161,7 +2161,7 @@ namespace BanditReloaded
             thermiteCooldown = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Thermite Bomb", "Cooldown"), 7f, new ConfigDescription("How long Thermite Bomb takes to recharge."));
             thermiteStock = base.Config.Bind<int>(new ConfigDefinition("20 - Secondary - Thermite Bomb", "Stock"), 1, new ConfigDescription("How many Thermite Bombs you start with."));
 
-            acidDamage = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Damage"), 2.4f, new ConfigDescription("How much damage Acid Bomb deals."));
+            acidDamage = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Damage"), 2.7f, new ConfigDescription("How much damage Acid Bomb deals."));
             acidWeakDuration = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Weaken Duration*"), 5f, new ConfigDescription("How long the Cripple debuff lasts for."));
             acidRadius = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Radius*"), 8f, new ConfigDescription("How large the explosion is."));
             acidProcCoefficient = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Proc Coefficient*"), 1f, new ConfigDescription("Affects the chance and power of Acid Bomb's procs."));
@@ -2191,8 +2191,8 @@ namespace BanditReloaded
             cloakCooldown = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Cooldown"), 8f, new ConfigDescription("How long Smokebomb takes to recharge."));
             cloakStock = base.Config.Bind<int>(new ConfigDefinition("30 - Utility - Smokebomb", "Stock"), 1, new ConfigDescription("How many charges Smokebomb has."));
 
-            loDamage = base.Config.Bind<float>(new ConfigDefinition("40 - Special - Lights Out", "Damage"), 4.2f, new ConfigDescription("How much damage Lights Out deals."));
-            loBuffDamage = base.Config.Bind<float>(new ConfigDefinition("40 - Special - Lights Out", "Debuff Bonus Damage*"), 4.2f, new ConfigDescription("How much extra damage Lights Out deals for each debuff the target has."));
+            loDamage = base.Config.Bind<float>(new ConfigDefinition("40 - Special - Lights Out", "Damage"), 4.5f, new ConfigDescription("How much damage Lights Out deals."));
+            loBuffDamage = base.Config.Bind<float>(new ConfigDefinition("40 - Special - Lights Out", "Debuff Bonus Damage*"), 4.5f, new ConfigDescription("How much extra damage Lights Out deals for each debuff the target has."));
             loGracePeriodMin = base.Config.Bind<float>(new ConfigDefinition("40 - Special - Lights Out", "Grace Period Minimum Duration*"), 1.5f, new ConfigDescription("Lower bound of Lights Out's Grace Period duration."));
             loGracePeriodMax = base.Config.Bind<float>(new ConfigDefinition("40 - Special - Lights Out", "Grace Period Maximum Duration*"), 4.5f, new ConfigDescription("Upper bound of Lights Out's Grace Period duration."));
             loForce = base.Config.Bind<float>(new ConfigDefinition("40 - Special - Lights Out", "Force"), 2400f, new ConfigDescription("Push force per shot."));
@@ -2203,8 +2203,8 @@ namespace BanditReloaded
             loExecuteThreshold = base.Config.Bind<float>(new ConfigDefinition("40 - Special - Lights Out", "Execute Threshold*"), 0f, new ConfigDescription("Instakill enemies that fall below this HP percentage."));
             loExecuteBosses = base.Config.Bind<bool>(new ConfigDefinition("40 - Special - Lights Out", "Execute Bosses*"), false, new ConfigDescription("Allow bosses to be executed by Lights Out."));
 
-            reuDamage = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Rack em Up", "Damage"), 0.7f, new ConfigDescription("How much damage Rack em Up deals."));
-            reuDebuffDamage = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Rack em Up", "Debuff Bonus Damage*"), 0.7f, new ConfigDescription("How much extra damage Rack em Up deals for each debuff the target has."));
+            reuDamage = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Rack em Up", "Damage"), 0.75f, new ConfigDescription("How much damage Rack em Up deals."));
+            reuDebuffDamage = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Rack em Up", "Debuff Bonus Damage*"), 0.75f, new ConfigDescription("How much extra damage Rack em Up deals for each debuff the target has."));
             reuGracePeriodMin = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Rack em Up", "Grace Period Minimum Duration*"), 1f, new ConfigDescription("Lower bound of Rack em Up's Grace Period duration."));
             reuGracePeriodMax = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Rack em Up", "Grace Period Maximum Duration*"), 4f, new ConfigDescription("Upper bound of Rack em Up's Grace Period duration."));
             reuBullets = base.Config.Bind<int>(new ConfigDefinition("41 - Special - Rack em Up", "Total Shots"), 6, new ConfigDescription("How many shots are fired."));
@@ -2218,9 +2218,8 @@ namespace BanditReloaded
             reuStock = base.Config.Bind<int>(new ConfigDefinition("41 - Special - Rack em Up", "Stock"), 1, new ConfigDescription("How many charges Rack em Up has."));
             reuExecuteThreshold = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Rack em Up", "Execute Threshold*"), 0f, new ConfigDescription("Instakill enemies that fall below this HP percentage."));
             reuExecuteBosses = base.Config.Bind<bool>(new ConfigDefinition("40 - Special - Lights Out", "Execute Bosses*"), false, new ConfigDescription("Allow bosses to be executed by Rack em Up."));
-
             
-            asMinDamage = base.Config.Bind<float>(new ConfigDefinition("99 -  Deprecated - Assassinate", "Minimum Damage"), 2.3f, new ConfigDescription("How much damage Assassinate deals at no charge."));
+            asMinDamage = base.Config.Bind<float>(new ConfigDefinition("99 -  Deprecated - Assassinate", "Minimum Damage"), 2.5f, new ConfigDescription("How much damage Assassinate deals at no charge."));
             asMaxDamage = base.Config.Bind<float>(new ConfigDefinition("99 -  Deprecated - Assassinate", "Maximum Damage"), 17f, new ConfigDescription("How much damage Assassinate deals at max charge."));
             asMinRadius = base.Config.Bind<float>(new ConfigDefinition("99 -  Deprecated - Assassinate", "Minimum Radius"), 0.4f, new ConfigDescription("How large Assassinate's shot radius is at no charge."));
             asMaxRadius = base.Config.Bind<float>(new ConfigDefinition("99 -  Deprecated - Assassinate", "Maximum Radius"), 2.4f, new ConfigDescription("How large Assassinate's shot radius is at max charge."));
@@ -2248,7 +2247,7 @@ namespace BanditReloaded
             Blast.baseMinDuration = blastMinDuration.Value;
             Blast.spreadBloomValue = blastSpread.Value;
             //Blast.individualReload = blastIndividualReload.Value;
-            Blast.recoilAmplitude = 1.4f;
+            Blast.recoilAmplitude = blastRecoil.Value;
             Blast.bulletRadius = 0.4f;
             Blast.attackSoundString = "Play_bandit_M1_shot";
             Blast.effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");
@@ -2618,26 +2617,16 @@ namespace BanditReloaded
             #region Blast
             primaryBlastDef = SkillDef.CreateInstance<SkillDef>();
             primaryBlastDef.activationState = new SerializableEntityStateType(typeof(Blast));
-
+            primaryBlastDef.isBullets = false;
             primaryBlastDef.baseRechargeInterval = blastRechargeInterval.Value;
             if (primaryBlastDef.baseRechargeInterval > 0f)
             {
                 primaryBlastDef.baseMaxStock = blastStock.Value;
-                // if (!blastIndividualReload.Value)
-                //{
                 primaryBlastDef.rechargeStock = primaryBlastDef.baseMaxStock;
-                primaryBlastDef.isBullets = true;
-                /*}
-                else
-                {
-                    primaryBlastDef.rechargeStock = 1;
-                    primaryBlastDef.isBullets = false;
-                }*/
                 Blast.noReload = false;
             }
             else
             {
-                primaryBlastDef.isBullets = true;
                 primaryBlastDef.baseRechargeInterval = 0f;
                 primaryBlastDef.baseMaxStock = 1;
                 primaryBlastDef.rechargeStock = 1;
@@ -2679,27 +2668,16 @@ namespace BanditReloaded
             #region scatter
             primaryScatterDef = SkillDef.CreateInstance<SkillDef>();
             primaryScatterDef.activationState = new SerializableEntityStateType(typeof(Scatter));
-
+            primaryScatterDef.isBullets = false;
             primaryScatterDef.baseRechargeInterval = scatterRechargeInterval.Value;
             if (primaryScatterDef.baseRechargeInterval > 0f)
             {
                 primaryScatterDef.baseMaxStock = scatterStock.Value;
-                //if (!scatterIndividualReload.Value)
-                //{
                 primaryScatterDef.rechargeStock = primaryScatterDef.baseMaxStock;
-                primaryScatterDef.isBullets = true;
-                /*}
-                else
-                {
-                    primaryScatterDef.rechargeStock = 1;
-                    primaryScatterDef.isBullets = false;
-                
-                }*/
                 Scatter.noReload = false;
             }
             else
             {
-                primaryScatterDef.isBullets = true;
                 primaryScatterDef.baseRechargeInterval = 0f;
                 primaryScatterDef.baseMaxStock = 1;
                 primaryScatterDef.rechargeStock = 1;
@@ -3151,7 +3129,6 @@ namespace BanditReloaded
             if (asEnabled.Value)
             {
                 Array.Resize(ref utilitySkillFamily.variants, utilitySkillFamily.variants.Length + 1);
-                //Array.Resize(ref primarySkillFamily.variants, primarySkillFamily.variants.Length + 1);//remove if undoing assassinate change
                 utilitySkillFamily.variants[utilitySkillFamily.variants.Length - 1] = new SkillFamily.Variant
                 {
                     skillDef = utilityAltDef,
@@ -3190,8 +3167,8 @@ namespace BanditReloaded
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private void SetupScepter()
         {
-            ThinkInvisible.ClassicItems.Scepter_V2.instance.RegisterScepterSkill(specialLightsOutScepterDef, BanditBodyName, SkillSlot.Special, 0);
-            ThinkInvisible.ClassicItems.Scepter_V2.instance.RegisterScepterSkill(specialBarrageScepterDef, BanditBodyName, SkillSlot.Special, 1);
+            ThinkInvisible.ClassicItems.Scepter.instance.RegisterScepterSkill(specialLightsOutScepterDef, BanditBodyName, SkillSlot.Special, 0);
+            ThinkInvisible.ClassicItems.Scepter.instance.RegisterScepterSkill(specialBarrageScepterDef, BanditBodyName, SkillSlot.Special, 1);
         }
 
         private void SetIcons()
@@ -3824,7 +3801,7 @@ namespace BanditReloaded
         List<BanditTimer> del = new List<BanditTimer>();
     }
 
-    public class BanditThermiteComponent : NetworkBehaviour
+    public class BanditThermiteComponent : MonoBehaviour
     {
         private void Awake()
         {
@@ -3849,7 +3826,6 @@ namespace BanditReloaded
             }
         }
 
-        [Server]
         private void DestroySelf()
         {
             if (burnEffectController)
