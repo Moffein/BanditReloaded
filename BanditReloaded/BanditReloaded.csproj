@@ -5,11 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="BanditReloaded.bnk" />
     <None Remove="icons" />
     <None Remove="skill1" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="BanditReloaded.bnk" />
     <EmbeddedResource Include="icons" />
   </ItemGroup>
 
