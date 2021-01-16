@@ -382,7 +382,7 @@ namespace BanditReloaded
 
             for (int i = 0; i < idrsBandit.namedEquipmentRuleGroups.Length; i++)
             {
-                equipmentList.Add(idrsBandit.namedItemRuleGroups[i]);
+                equipmentList.Add(idrsBandit.namedEquipmentRuleGroups[i]);
             }
 
             #region completed

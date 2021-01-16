@@ -13,7 +13,6 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnEnter()
         {
             base.OnEnter();
-            BanditHelpers.PlayCloakDamageSound(base.characterBody);
             this.duration = AcidBomb.baseDuration / this.attackSpeedStat;
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
@@ -55,7 +54,6 @@ namespace EntityStates.BanditReloadedSkills
 
         public static GameObject projectilePrefab;
         public static float damageCoefficient;
-        public static float debuffDuration;
         public static float force = 0f;
         public static float selfForce = 0f;
         public static float baseDuration;

@@ -24,12 +24,21 @@ namespace EntityStates.BanditReloadedSkills
             if (base.characterBody)
             {
                 base.characterBody.SetAimTimer(this.duration);
+                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                {
+                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, 1.2f);
+                }
             }
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+            if (base.characterBody)
+            {
+                base.characterBody.SetAimTimer(this.duration);
+            }
             if (base.fixedAge >= this.duration && base.isAuthority && !inputBank.skill4.down)
             {
                 this.outer.SetNextState(new FireLightsOut());
@@ -40,6 +49,10 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnExit()
         {
             base.characterBody.crosshairPrefab = this.defaultCrosshairPrefab;
+
+            base.PlayAnimation("Gesture, Additive", "FireRevolver");
+            base.PlayAnimation("Gesture, Override", "FireRevolver");
+
             base.OnExit();
         }
 
@@ -59,7 +72,6 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnEnter()
         {
             base.OnEnter();
-            BanditHelpers.PlayCloakDamageSound(base.characterBody);
             this.duration = FireLightsOut.baseDuration / this.attackSpeedStat;
             base.AddRecoil(-3f * FireLightsOut.recoilAmplitude, -4f * FireLightsOut.recoilAmplitude, -0.5f * FireLightsOut.recoilAmplitude, 0.5f * FireLightsOut.recoilAmplitude);
             Ray aimRay = base.GetAimRay();
@@ -67,8 +79,6 @@ namespace EntityStates.BanditReloadedSkills
             string muzzleName = "MuzzlePistol";
             Util.PlaySound(FireLightsOut.attackSoundString, base.gameObject);
 
-            base.PlayAnimation("Gesture, Additive", "FireRevolver");
-            base.PlayAnimation("Gesture, Override", "FireRevolver");
             if (FireLightsOut.effectPrefab)
             {
                 EffectManager.SimpleMuzzleFlash(FireLightsOut.effectPrefab, base.gameObject, muzzleName, false);
@@ -127,11 +137,6 @@ namespace EntityStates.BanditReloadedSkills
         public static float damageCoefficient;
         public static float force;
         public static float baseDuration;
-        public static float gracePeriodMin;
-        public static float gracePeriodMax;
-        public static float executeThreshold;
-        public static float buffDamageCoefficient;
-        public static bool executeBosses;
         public static string attackSoundString = "Play_bandit_M2_shot";
         public static float recoilAmplitude = 4f;
         private ChildLocator childLocator;

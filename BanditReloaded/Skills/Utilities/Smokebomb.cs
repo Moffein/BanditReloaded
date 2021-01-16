@@ -31,16 +31,20 @@ namespace EntityStates.BanditReloadedSkills
 
         public override void OnExit()
         {
-            if (base.characterBody && NetworkServer.active)
+            if (base.characterBody)
             {
-                if (base.characterBody.HasBuff(BuffIndex.Cloak))
+                if (NetworkServer.active)
                 {
-                    base.characterBody.RemoveBuff(BuffIndex.Cloak);
+                    if (base.characterBody.HasBuff(BuffIndex.Cloak))
+                    {
+                        base.characterBody.RemoveBuff(BuffIndex.Cloak);
+                    }
+                    if (base.characterBody.HasBuff(BuffIndex.CloakSpeed))
+                    {
+                        base.characterBody.RemoveBuff(BuffIndex.CloakSpeed);
+                    }
                 }
-                if (base.characterBody.HasBuff(BuffIndex.CloakSpeed))
-                {
-                    base.characterBody.RemoveBuff(BuffIndex.CloakSpeed);
-                }
+                BanditHelpers.PlayCloakDamageSound(base.characterBody);
             }
             if (!this.outer.destroying)
             {
@@ -100,7 +104,8 @@ namespace EntityStates.BanditReloadedSkills
                 position = base.transform.position,
                 radius = CastSmokescreenNoDelay.radius,
                 falloffModel = BlastAttack.FalloffModel.None,
-                damageType = DamageType.Stun1s,
+                damageType = CastSmokescreenNoDelay.nonLethal ? (DamageType.Stun1s | DamageType.NonLethal) : DamageType.Stun1s,
+                procCoefficient = CastSmokescreenNoDelay.procCoefficient,
                 crit = base.RollCrit(),
                 attackerFiltering = AttackerFiltering.NeverHit
             }.Fire();
@@ -119,9 +124,11 @@ namespace EntityStates.BanditReloadedSkills
         public static float minimumStateDuration;
         public static string startCloakSoundString = "Play_bandit_shift_land";
         public static string stopCloakSoundString = "Play_bandit_shift_end";
-        public static GameObject smokescreenEffectPrefab = EntityStates.Commando.CommandoWeapon.CastSmokescreenNoDelay.smokescreenEffectPrefab;
-        public static Material destealthMaterial = EntityStates.Commando.CommandoWeapon.CastSmokescreenNoDelay.destealthMaterial;
+        public static GameObject smokescreenEffectPrefab = Resources.Load<GameObject>("prefabs/effects/smokescreeneffect");
+        public static Material destealthMaterial;
         public static float damageCoefficient;
+        public static float procCoefficient;
+        public static bool nonLethal;
         public static float radius;
         public static float forceMagnitude = 0f;
 

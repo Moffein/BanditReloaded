@@ -36,6 +36,15 @@ namespace EntityStates.BanditReloadedSkills
             Util.PlaySound(Assassinate.beginChargeSoundString, base.gameObject);
             this.defaultCrosshairPrefab = base.characterBody.crosshairPrefab;
             base.characterBody.crosshairPrefab = specialCrosshairPrefab;
+
+            if (base.characterBody)
+            {
+                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                {
+                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, this.chargeDuration + 0.5f);
+                }
+            }
         }
 
         public override void OnExit()
@@ -227,6 +236,7 @@ namespace EntityStates.BanditReloadedSkills
 
         public override void OnExit()
         {
+            BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
             base.OnExit();
         }
 
@@ -255,7 +265,6 @@ namespace EntityStates.BanditReloadedSkills
         public static float minForce;
         public static float maxForce;
         public static float baseDuration;
-        public static float barrierPercent;
         public static string attackSoundString = "Play_bandit_M2_shot";
         public static string fullChargeSoundString = "Play_item_use_lighningArm";
         public static float recoilAmplitude = 4f;

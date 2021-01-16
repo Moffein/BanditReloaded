@@ -13,12 +13,11 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnEnter()
         {
             base.OnEnter();
-            BanditHelpers.PlayCloakDamageSound(base.characterBody);
             this.duration = ClusterBomb.baseDuration / this.attackSpeedStat;
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
             base.PlayAnimation("Gesture", "FireRevolver", "FireRevolver.playbackRate", this.duration);
-            Util.PlaySound("Play_commando_M2_grenade_throw", base.gameObject);
+            Util.PlaySound("Play_BanditReloaded_dynamite_toss", base.gameObject);
             if (base.isAuthority)
             {
                 ProjectileManager.instance.FireProjectile(ClusterBomb.projectilePrefab, aimRay.origin, Util.QuaternionSafeLookRotation(aimRay.direction), base.gameObject, this.damageStat * ClusterBomb.damageCoefficient, 0f, Util.CheckRoll(this.critStat, base.characterBody.master), DamageColorIndex.Default, null, -1f);
@@ -55,10 +54,9 @@ namespace EntityStates.BanditReloadedSkills
 
         public static GameObject projectilePrefab;
         public static float damageCoefficient;
-        public static float force = 0f;
+        public static float force = 2500f;
         public static float selfForce = 0f;
         public static float baseDuration;
-        public static int bombletCount;
         public static float bombletDamageCoefficient;
         private float duration;
     }

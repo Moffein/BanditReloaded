@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using EntityStates.Engi.EngiWeapon;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -21,12 +22,22 @@ namespace EntityStates.BanditReloadedSkills
             {
                 base.characterBody.SetAimTimer(this.duration);
                 BanditHelpers.TriggerQuickdraw(base.characterBody.skillLocator);
+
+                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                {
+                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, 1.2f);
+                }
             }
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+            if (base.characterBody)
+            {
+                base.characterBody.SetAimTimer(this.duration);
+            }
             if (base.fixedAge >= this.duration && base.isAuthority && !inputBank.skill4.down)
             {
                 this.outer.SetNextState(new FireBarrage());
@@ -36,6 +47,8 @@ namespace EntityStates.BanditReloadedSkills
 
         public override void OnExit()
         {
+            base.PlayAnimation("Gesture, Additive", "FireRevolver");
+            base.PlayAnimation("Gesture, Override", "FireRevolver");
             base.OnExit();
         }
 
@@ -78,7 +91,6 @@ namespace EntityStates.BanditReloadedSkills
             {
                 if (bulletCount > 0)
                 {
-                    BanditHelpers.PlayCloakDamageSound(base.characterBody);
                     this.prevShot = base.fixedAge;
                     bulletCount--;
                     base.AddRecoil(-3f * this.recoil, -4f * this.recoil, -0.5f * this.recoil, 0.5f * this.recoil);
@@ -110,7 +122,7 @@ namespace EntityStates.BanditReloadedSkills
                             isCrit = this.isCrit,
                             HitEffectNormal = true,
                             radius = 0.4f,
-                            maxDistance = 80f,
+                            maxDistance = 200f,
                             procCoefficient = 1f,
                             damage = FireBarrage.damageCoefficient * this.damageStat,
                             damageType = DamageType.ResetCooldownsOnKill | DamageType.SlowOnHit,
@@ -138,11 +150,6 @@ namespace EntityStates.BanditReloadedSkills
         public static float damageCoefficient;
         public static float force;
         public static float baseDuration;
-        public static float gracePeriodMin;
-        public static float gracePeriodMax;
-        public static float executeThreshold;
-        public static float buffDamageCoefficient;
-        public static bool executeBosses;
         public static string attackSoundString = "Play_bandit_M2_shot";
         public static float recoilAmplitude = 2.2f;
         public static int maxBullets;

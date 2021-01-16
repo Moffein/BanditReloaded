@@ -9,31 +9,28 @@ namespace BanditReloaded
 {
     public class BanditCrosshairComponent : MonoBehaviour
     {
-        private void Start()
+        private void Awake()
         {
             cb = base.GetComponent<CharacterBody>();
             skills = cb.skillLocator;
             defaultCrosshairPrefab = cb.crosshairPrefab;
         }
-        private void Update()
+        private void FixedUpdate()
         {
-            if (skills.primary.skillDef.skillName == "FireSlug" || skills.primary.skillDef.skillName == "FireScatter")
+            if ((skills.primary.skillDef.skillName == "FireSlug" && !Blast.noReload) || (skills.primary.skillDef.skillName == "FireScatter" && !Scatter.noReload))
             {
-                if ((!Blast.noReload && skills.primary.skillDef.skillName == "FireSlug") || (!Scatter.noReload && skills.primary.skillDef.skillName == "FireScatter"))
+                if (skills.primary.maxStock > 1 && skills.primary.stock > 0)
                 {
-                    if (skills.primary.maxStock > 1 && skills.primary.stock > 0)
+                    if (cb.crosshairPrefab == emptyCrosshairPrefab)
                     {
-                        if (cb.crosshairPrefab == emptyCrosshairPrefab)
-                        {
-                            cb.crosshairPrefab = defaultCrosshairPrefab;
-                        }
+                        cb.crosshairPrefab = defaultCrosshairPrefab;
                     }
-                    else
+                }
+                else
+                {
+                    if (cb.crosshairPrefab == defaultCrosshairPrefab)
                     {
-                        if (cb.crosshairPrefab == defaultCrosshairPrefab)
-                        {
-                            cb.crosshairPrefab = emptyCrosshairPrefab;
-                        }
+                        cb.crosshairPrefab = emptyCrosshairPrefab;
                     }
                 }
             }

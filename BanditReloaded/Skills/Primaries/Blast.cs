@@ -12,24 +12,15 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnEnter()
         {
             base.OnEnter();
-            BanditHelpers.PlayCloakDamageSound(base.characterBody);
             base.AddRecoil(-1f * Blast.recoilAmplitude, -2f * Blast.recoilAmplitude, -0.5f * Blast.recoilAmplitude, 0.5f * Blast.recoilAmplitude);
-            if (base.characterBody.skillLocator.primary.stock > 0 || Blast.noReload)
+
+            this.maxDuration = Blast.baseMaxDuration / this.attackSpeedStat;
+            this.minDuration = Blast.baseMinDuration / this.attackSpeedStat;
+            Util.PlaySound(Blast.useClassicSound ? Blast.classicSoundString : Blast.attackSoundString, base.gameObject);
+            base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
+            if (base.characterBody.skillLocator.primary.stock == 0)
             {
-                this.maxDuration = Blast.baseMaxDuration / this.attackSpeedStat;
-                this.minDuration = Blast.baseMinDuration / this.attackSpeedStat;
-                Util.PlayScaledSound(Blast.attackSoundString, base.gameObject, 0.85f);
-                base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
-            }
-            else
-            {
-                this.maxDuration = Blast.dryFireDuration;
-                this.minDuration = Blast.dryFireDuration;
-                base.characterBody.skillLocator.primary.stock = 0;
-                Util.PlayScaledSound(Blast.attackSoundString, base.gameObject, 1f);
                 Util.PlayScaledSound("Play_commando_M2_grenade_throw", base.gameObject, 1.2f);
-                dryFire = true;
-                reloadTimer = Mathf.Max(base.characterBody.skillLocator.primary.rechargeStopwatch, Blast.dryFireDuration);
             }
 
             Ray aimRay = base.GetAimRay();
@@ -42,8 +33,8 @@ namespace EntityStates.BanditReloadedSkills
             }
             else
             {
-                base.PlayAnimation("Gesture, Additive", "FireShotgun", "FireShotgun.playbackRate", base.characterBody.skillLocator.primary.CalculateFinalRechargeInterval() * 1.1f);
-                base.PlayAnimation("Gesture, Override", "FireShotgun", "FireShotgun.playbackRate", base.characterBody.skillLocator.primary.CalculateFinalRechargeInterval() * 1.1f);
+                base.PlayAnimation("Gesture, Additive", "FireShotgun", "FireShotgun.playbackRate", base.characterBody.skillLocator.primary.CalculateFinalRechargeInterval() * 1.72f);
+                base.PlayAnimation("Gesture, Override", "FireShotgun", "FireShotgun.playbackRate", base.characterBody.skillLocator.primary.CalculateFinalRechargeInterval() * 1.72f);
             }
             string muzzleName = "MuzzleShotgun";
             if (Blast.effectPrefab)
@@ -80,26 +71,18 @@ namespace EntityStates.BanditReloadedSkills
                 }
                 ba.Fire();
             }
-            base.characterBody.AddSpreadBloom(this.isMash ? 2 * Blast.mashSpread : Blast.spreadBloomValue);
+            base.characterBody.AddSpreadBloom(Blast.spreadBloomValue);
         }
 
         public override void OnExit()
         {
             base.OnExit();
-            if (Blast.vanillaBrainstalks && base.HasBuff(BuffIndex.NoCooldowns))
-            {
-                base.characterBody.skillLocator.primary.stock = base.characterBody.skillLocator.primary.maxStock;
-            }
             BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (dryFire)
-            {
-                base.characterBody.skillLocator.primary.rechargeStopwatch = reloadTimer;
-            }
             this.buttonReleased |= !base.inputBank.skill1.down;
             if (base.fixedAge >= this.maxDuration && base.isAuthority)
             {
@@ -112,7 +95,7 @@ namespace EntityStates.BanditReloadedSkills
         {
             if (this.buttonReleased && base.fixedAge >= this.minDuration)
             {
-                base.characterBody.AddSpreadBloom((Blast.mashSpread - Blast.spreadBloomValue) / 2f);
+                base.characterBody.AddSpreadBloom((Blast.mashSpread - Blast.spreadBloomValue));
                 return InterruptPriority.Any;
             }
             return InterruptPriority.Skill;
@@ -122,11 +105,11 @@ namespace EntityStates.BanditReloadedSkills
         public static GameObject hitEffectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");
         public static GameObject tracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracerbanditshotgun");
         public static string attackSoundString = "Play_BanditReloaded_blast";
+        public static string classicSoundString = "Play_BanditReloaded_blast";
         public static float maxDistance;
         public static float damageCoefficient;
         public static float force;
         public static float bulletRadius = 0.4f;
-        public static float dryFireDuration;
         public static float baseMaxDuration;
         public static float baseMinDuration;
         public static float recoilAmplitude;
@@ -134,15 +117,11 @@ namespace EntityStates.BanditReloadedSkills
         public static bool individualReload;
         public static bool useFalloff;
         public static bool penetrateEnemies;
-        public static bool vanillaBrainstalks;
         public static bool noReload;
+        public static bool useClassicSound;
         public static float mashSpread;
         private float maxDuration;
         private float minDuration;
         private bool buttonReleased;
-        public bool isMash = false;
-
-        private bool dryFire = false;
-        private float reloadTimer = 0f;
     }
 }

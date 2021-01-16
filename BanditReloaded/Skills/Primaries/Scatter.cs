@@ -13,26 +13,15 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnEnter()
         {
             base.OnEnter();
-            BanditHelpers.PlayCloakDamageSound(base.characterBody);
             base.AddRecoil(-1f * Scatter.recoilAmplitude, -2f * Scatter.recoilAmplitude, -0.5f * Scatter.recoilAmplitude, 0.5f * Scatter.recoilAmplitude);
 
-            if (base.characterBody.skillLocator.primary.stock > 0 || Scatter.noReload)
+            this.maxDuration = Scatter.baseMaxDuration / this.attackSpeedStat;
+            this.minDuration = Scatter.baseMinDuration / this.attackSpeedStat;
+            Util.PlaySound(Scatter.attackSoundString, base.gameObject);
+            base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
+            if (base.characterBody.skillLocator.primary.stock == 0)
             {
-                this.maxDuration = Scatter.baseMaxDuration / this.attackSpeedStat;
-                this.minDuration = Scatter.baseMinDuration / this.attackSpeedStat;
-                Util.PlayScaledSound(Scatter.attackSoundString, base.gameObject, 0.8f);
-                base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
-            }
-            else
-            {
-                this.maxDuration = Scatter.dryFireDuration;
-                this.minDuration = Scatter.dryFireDuration;
-                base.characterBody.skillLocator.primary.stock = 0;
-                //base.characterBody.crosshairPrefab = Scatter.emptyCrosshairPrefab;
-                Util.PlayScaledSound(Scatter.attackSoundString, base.gameObject, 1f);
                 Util.PlayScaledSound("Play_commando_M2_grenade_throw", base.gameObject, 1.2f);
-                dryFire = true;
-                reloadTimer = Mathf.Max(base.characterBody.skillLocator.primary.rechargeStopwatch, Scatter.dryFireDuration);
             }
 
             Ray aimRay = base.GetAimRay();
@@ -104,21 +93,12 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnExit()
         {
             base.OnExit();
-            //base.characterBody.crosshairPrefab = defaultCrosshairPrefab;
-            if (Scatter.vanillaBrainstalks && base.HasBuff(BuffIndex.NoCooldowns))
-            {
-                base.characterBody.skillLocator.primary.stock = base.characterBody.skillLocator.primary.maxStock;
-            }
             BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (dryFire)
-            {
-                base.characterBody.skillLocator.primary.rechargeStopwatch = reloadTimer;
-            }
             this.buttonReleased |= !base.inputBank.skill1.down;
             if (base.fixedAge >= this.maxDuration && base.isAuthority)
             {
@@ -136,29 +116,24 @@ namespace EntityStates.BanditReloadedSkills
             return InterruptPriority.Skill;
         }
 
-        public static GameObject effectPrefab;
-        public static GameObject hitEffectPrefab;
-        public static GameObject tracerEffectPrefab;
+        public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");
+        public static GameObject hitEffectPrefab = Resources.Load<GameObject>("prefabs/effects/impacteffects/hitspark1");
+        public static GameObject tracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracerbanditshotgun");
         public static float damageCoefficient;
         public static float force;
-        public static float bulletRadius;
+        public static float bulletRadius = 0.3f;
         public static float baseMaxDuration;
         public static float baseMinDuration;
-        public static string attackSoundString;
+        public static string attackSoundString = "Play_BanditReloaded_shotgun";
         public static float recoilAmplitude;
         public static float spreadBloomValue;
         public static uint pelletCount;
         public static float procCoefficient;
         public static float range;
-        public static bool vanillaBrainstalks;
         public static bool penetrateEnemies;
         private float maxDuration;
         private float minDuration;
         private bool buttonReleased;
         public static bool noReload;
-        public static float dryFireDuration;
-
-        private bool dryFire = false;
-        private float reloadTimer = 0f;
     }
 }

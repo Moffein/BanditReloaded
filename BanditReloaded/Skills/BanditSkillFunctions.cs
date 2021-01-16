@@ -12,19 +12,8 @@ namespace EntityStates.BanditReloadedSkills
         {
             if (enablePassive)
             {
-                if (skills.primary.rechargeStock < skills.primary.maxStock
-                && skills.primary.stock + skills.primary.rechargeStock <= skills.primary.maxStock)
-                {
-                    skills.primary.stock += skills.primary.rechargeStock;
-                    if (skills.primary.rechargeStopwatch < 0f)
-                    {
-                        skills.primary.rechargeStopwatch = 0f;
-                    }
-                }
-                else
-                {
-                    skills.primary.rechargeStopwatch += skills.primary.CalculateFinalRechargeInterval();
-                }
+                skills.primary.stock = skills.primary.maxStock;
+                skills.primary.rechargeStopwatch = 0f;
             }
         }
 
@@ -40,7 +29,7 @@ namespace EntityStates.BanditReloadedSkills
         {
             if (cb && cb.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
             {
-                Util.PlaySound("Play_BanditReloaded_reset", cb.gameObject);
+                Util.PlaySound("Play_BanditReloaded_cloakdamage", cb.gameObject);
             }
         }
 

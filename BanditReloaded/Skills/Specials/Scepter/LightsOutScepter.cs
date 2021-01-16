@@ -23,6 +23,11 @@ namespace EntityStates.BanditReloadedSkills
             if (base.characterBody)
             {
                 base.characterBody.SetAimTimer(this.duration);
+                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                {
+                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, 1.2f);
+                }
             }
         }
 
@@ -92,7 +97,7 @@ namespace EntityStates.BanditReloadedSkills
                     maxDistance = 2000f,
                     procCoefficient = 1f,
                     damage = FireLightsOutScepter.damageCoefficient * this.damageStat,
-                    damageType = DamageType.ResetCooldownsOnKill | DamageType.ClayGoo,
+                    damageType = DamageType.ResetCooldownsOnKill,
                     smartCollision = true
                 }.Fire();
             }
@@ -100,6 +105,7 @@ namespace EntityStates.BanditReloadedSkills
 
         public override void OnExit()
         {
+            BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
             base.OnExit();
         }
 
@@ -123,14 +129,8 @@ namespace EntityStates.BanditReloadedSkills
         public static float damageCoefficient;
         public static float force;
         public static float baseDuration;
-        public static float gracePeriodMin;
-        public static float gracePeriodMax;
-        public static float executeThreshold;
-        public static float buffDamageCoefficient;
-        public static bool executeBosses;
         public static string attackSoundString = "Play_bandit_M2_shot";
         public static float recoilAmplitude = 4f;
-        private ChildLocator childLocator;
         private float duration;
     }
 }

@@ -37,7 +37,8 @@ namespace EntityStates.BanditReloadedSkills
                     position = base.transform.position,
                     radius = CastSmokescreen.radius,
                     falloffModel = BlastAttack.FalloffModel.None,
-                    damageType = DamageType.Stun1s,
+                    damageType = CastSmokescreen.nonLethal ? (DamageType.Stun1s | DamageType.NonLethal) : DamageType.Stun1s,
+                    procCoefficient = CastSmokescreen.procCoefficient,
                     crit = base.RollCrit(),
                     attackerFiltering = AttackerFiltering.NeverHit
                 }.Fire();
@@ -45,6 +46,7 @@ namespace EntityStates.BanditReloadedSkills
         }
         public override void OnEnter()
         {
+            Debug.Log(EntityStates.Commando.CommandoWeapon.CastSmokescreen.initialEffectPrefab);
             this.duration = CastSmokescreen.baseDuration / this.attackSpeedStat;
             this.totalDuration = CastSmokescreen.stealthDuration + this.totalDuration;
             base.PlayCrossfade("Gesture, Smokescreen", "CastSmokescreen", "CastSmokescreen.playbackRate", this.duration, 0.2f);
@@ -83,7 +85,7 @@ namespace EntityStates.BanditReloadedSkills
                     {
                         base.characterBody.RemoveBuff(BuffIndex.CloakSpeed);
                     }
-                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, 0.5f);
+                    BanditHelpers.PlayCloakDamageSound(base.characterBody);
                 }
             }
             if (!this.outer.destroying)
@@ -124,14 +126,16 @@ namespace EntityStates.BanditReloadedSkills
             return InterruptPriority.Any;
         }
 
-        public static float baseDuration = EntityStates.Commando.CommandoWeapon.CastSmokescreen.baseDuration;
+        public static float baseDuration = 0.8f;
         public static float stealthDuration = 3f;
         public static string jumpSoundString = "Play_bandit_shift_jump";
         public static string startCloakSoundString = "Play_bandit_shift_land";
         public static string stopCloakSoundString = "Play_bandit_shift_end";
-        public static GameObject initialEffectPrefab = EntityStates.Commando.CommandoWeapon.CastSmokescreen.initialEffectPrefab;
-        public static GameObject smokescreenEffectPrefab = EntityStates.Commando.CommandoWeapon.CastSmokescreen.smokescreenEffectPrefab;
+        public static GameObject initialEffectPrefab = Resources.Load<GameObject>("prefabs/effects/impacteffects/characterlandimpact");
+        public static GameObject smokescreenEffectPrefab = Resources.Load<GameObject>("prefabs/effects/smokescreeneffect");
         public static float damageCoefficient = 1.3f;
+        public static float procCoefficient;
+        public static bool nonLethal;
         public static float radius = 4f;
         public static float forceMagnitude = 0f;
 
