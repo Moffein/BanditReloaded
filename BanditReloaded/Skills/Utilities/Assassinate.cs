@@ -158,8 +158,8 @@ namespace EntityStates.BanditReloadedSkills
         private bool playedSound = false;
         private float chargeCoefficient = 0f;
 
-        public static GameObject chargeupVfxPrefab = EntityStates.Toolbot.ChargeSpear.chargeupVfxPrefab;
-        public static GameObject holdChargeVfxPrefab = EntityStates.Toolbot.ChargeSpear.holdChargeVfxPrefab;
+        public static GameObject chargeupVfxPrefab;
+        public static GameObject holdChargeVfxPrefab;
 
         private GameObject chargeupVfxGameObject;
         private GameObject holdChargeVfxGameObject;
@@ -257,7 +257,7 @@ namespace EntityStates.BanditReloadedSkills
 
         public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");
         public static GameObject hitEffectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");
-        public static GameObject tracerEffectPrefab = EntityStates.Sniper.SniperWeapon.FireRifle.tracerEffectPrefab;
+        public static GameObject tracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracertoolbotrebar");
         public static GameObject perfectTracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracertoolbotrebar");
         public static float minDamageCoefficient;
         public static float maxDamageCoefficient;
