@@ -25,8 +25,8 @@ namespace BanditReloaded
 {
     [BepInDependency("com.bepis.r2api")]
     [BepInDependency("com.ThinkInvisible.ClassicItems", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.0.0")]
-    [R2API.Utils.R2APISubmoduleDependency(nameof(SurvivorAPI), nameof(LoadoutAPI), nameof(PrefabAPI), nameof(BuffAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(DotAPI), nameof(SoundAPI), nameof(EffectAPI))]
+    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.0.1")]
+    [R2API.Utils.R2APISubmoduleDependency(nameof(SurvivorAPI), nameof(LoadoutAPI), nameof(PrefabAPI), nameof(BuffAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(SoundAPI), nameof(EffectAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     class BanditReloaded : BaseUnityPlugin
     {
@@ -791,7 +791,7 @@ namespace BanditReloaded
             utilityDefA.icon = iconSkill3;
             utilityDefA.requiredStock = 1;
             utilityDefA.stockToConsume = 1;
-            utilityDefA.forceSprintDuringState = true;
+            utilityDefA.forceSprintDuringState = false;
             utilityDefA.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_INVIS", "KEYWORD_STUNNING" };
             LoadoutAPI.AddSkillDef(utilityDefA);
 
@@ -818,7 +818,7 @@ namespace BanditReloaded
             utilityDefB.icon = iconSkill3;
             utilityDefB.requiredStock = 1;
             utilityDefB.stockToConsume = 1;
-            utilityDefB.forceSprintDuringState = true;
+            utilityDefB.forceSprintDuringState = false;
             utilityDefB.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_INVIS", "KEYWORD_STUNNING" };
             LoadoutAPI.AddSkillDef(utilityDefB);
             #endregion
