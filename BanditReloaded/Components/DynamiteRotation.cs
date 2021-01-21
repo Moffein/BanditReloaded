@@ -21,11 +21,7 @@ namespace BanditReloaded.Components
             {
                 Destroy(this);
             }
-        }
-
-        public void Update()
-        {
-            base.transform.rotation = Quaternion.AngleAxis(-360f * Time.deltaTime, Vector3.right) * base.transform.rotation;
+            base.transform.rotation = Quaternion.AngleAxis(-360f * Time.fixedDeltaTime, Vector3.right) * base.transform.rotation;
         }
 
         private ProjectileImpactExplosion projectileImpactExplosion;
