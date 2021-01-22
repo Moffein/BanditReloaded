@@ -25,7 +25,7 @@ namespace BanditReloaded
 {
     [BepInDependency("com.bepis.r2api")]
     [BepInDependency("com.ThinkInvisible.ClassicItems", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.0.4")]
+    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.0.5")]
     [R2API.Utils.R2APISubmoduleDependency(nameof(SurvivorAPI), nameof(LoadoutAPI), nameof(PrefabAPI), nameof(BuffAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(SoundAPI), nameof(EffectAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     class BanditReloaded : BaseUnityPlugin

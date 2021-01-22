@@ -5,6 +5,7 @@ using UnityEngine;
 using RoR2;
 using RoR2.Projectile;
 using R2API.Utils;
+using UnityEngine.Networking;
 
 namespace BanditReloaded.Components
 {
@@ -17,11 +18,14 @@ namespace BanditReloaded.Components
 
         public void FixedUpdate()
         {
-            if (projectileImpactExplosion.GetFieldValue<bool>("hasImpact"))
+            if (NetworkServer.active)
             {
-                Destroy(this);
+                if (projectileImpactExplosion.GetFieldValue<bool>("hasImpact"))
+                {
+                    Destroy(this);
+                }
+                base.transform.rotation = Quaternion.AngleAxis(-360f * Time.fixedDeltaTime, Vector3.right) * base.transform.rotation;
             }
-            base.transform.rotation = Quaternion.AngleAxis(-360f * Time.fixedDeltaTime, Vector3.right) * base.transform.rotation;
         }
 
         private ProjectileImpactExplosion projectileImpactExplosion;
