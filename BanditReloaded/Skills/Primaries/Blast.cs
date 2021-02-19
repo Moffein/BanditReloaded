@@ -16,7 +16,7 @@ namespace EntityStates.BanditReloadedSkills
 
             this.maxDuration = Blast.baseMaxDuration / this.attackSpeedStat;
             this.minDuration = Blast.baseMinDuration / this.attackSpeedStat;
-            Util.PlaySound(Blast.useClassicSound ? Blast.classicSoundString : Blast.attackSoundString, base.gameObject);
+            Util.PlaySound(Blast.attackSoundString, base.gameObject);
             base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
             if (base.characterBody.skillLocator.primary.stock == 0)
             {
@@ -105,7 +105,6 @@ namespace EntityStates.BanditReloadedSkills
         public static GameObject hitEffectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");
         public static GameObject tracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracerbanditshotgun");
         public static string attackSoundString = "Play_BanditReloaded_blast";
-        public static string classicSoundString = "Play_BanditReloaded_blast";
         public static float maxDistance;
         public static float damageCoefficient;
         public static float force;
@@ -118,7 +117,6 @@ namespace EntityStates.BanditReloadedSkills
         public static bool useFalloff;
         public static bool penetrateEnemies;
         public static bool noReload;
-        public static bool useClassicSound;
         public static float mashSpread;
         private float maxDuration;
         private float minDuration;

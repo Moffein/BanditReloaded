@@ -25,13 +25,13 @@ namespace BanditReloaded
 {
     [BepInDependency("com.bepis.r2api")]
     [BepInDependency("com.ThinkInvisible.ClassicItems", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.0.5")]
+    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.0.8")]
     [R2API.Utils.R2APISubmoduleDependency(nameof(SurvivorAPI), nameof(LoadoutAPI), nameof(PrefabAPI), nameof(BuffAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(SoundAPI), nameof(EffectAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     class BanditReloaded : BaseUnityPlugin
     {
         #region cfg
-        ConfigEntry<bool> usePassive, cloakAnim, useAltCrosshair, classicOutro, classicBlastSound;
+        ConfigEntry<bool> usePassive, cloakAnim, useAltCrosshair, classicOutro;
 
         ConfigEntry<float> specialExecuteThreshold, loGracePeriodMin, loGracePeriodMax, specialDebuffBonus;
         ConfigEntry<bool> specialExecuteBosses;
@@ -39,6 +39,7 @@ namespace BanditReloaded
         ConfigEntry<float> blastDamage, blastRange, blastMaxDuration, blastMinDuration, blastForce, blastSpread, blastRadius, blastMashSpread, blastRecoil, blastRechargeInterval;
         ConfigEntry<int> blastStock;
         ConfigEntry<bool> blastPenetrate, blastFalloff;
+        ConfigEntry<string> blastSound;
 
         ConfigEntry<float> thermiteDamage, thermiteBurnDuration, thermiteRadius, thermiteFireRate, thermiteProcCoefficient, thermiteCooldown, thermiteBurnDamageMult;
         ConfigEntry<int> thermiteStock;
@@ -217,7 +218,8 @@ namespace BanditReloaded
 
             On.RoR2.CameraRigController.OnEnable += (orig, self) =>
             {
-                if (RoR2.SceneCatalog.GetSceneDefForCurrentScene().baseSceneName.Equals("lobby"))
+                SceneDef sd = RoR2.SceneCatalog.GetSceneDefForCurrentScene();
+                if (sd && sd.baseSceneName.Equals("lobby"))
                 {
                     self.enableFading = false;
                 }
@@ -455,12 +457,12 @@ namespace BanditReloaded
                             {
                                 if ((!isBarrage && damageCoefficient > loDamage.Value * (1f + 4f * specialDebuffBonus.Value)) || (isBarrage && damageCoefficient > reuDamage.Value * (1f + 9f * specialDebuffBonus.Value)))
                                 {
-                                    EffectManager.SpawnEffect(loEffectHigh, new EffectData
+                                    /*EffectManager.SpawnEffect(loEffectHigh, new EffectData
                                     {
                                         color = BanditColor,
                                         origin = damageInfo.position,
                                         scale = 6f
-                                    }, true);
+                                    }, true);*/
                                     if (bnc)
                                     {
                                         bnc.RpcPlayLOHigh();
@@ -543,7 +545,7 @@ namespace BanditReloaded
             classicOutro = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use RoR1 Outro"), false, new ConfigDescription("Uses Bandit's RoR1 ending."));
             asEnabled = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Enable unused Assassinate utility*"), false, new ConfigDescription("Enables the Assassinate Utility skill. This skill was disabled due to being poorly coded and not fitting Bandit's kit, but it's left in in case you want to use it. This skill can only be used if Assassinate is enabled on the host."));
 
-            classicBlastSound = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Classic Sound"), false, new ConfigDescription("Use Bandit's RoR1 sound for Blast."));
+            blastSound = base.Config.Bind<string>(new ConfigDefinition("10 - Primary - Blast", "Firing Sound"), "vanilla", new ConfigDescription("Which sound Blast plays when firing. Accepted values are 'new', 'classic', and 'vanilla'."));
             blastDamage = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Damage"), 2.3f, new ConfigDescription("How much damage Blast deals."));
             blastMaxDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Fire Rate"), 0.3f, new ConfigDescription("Time between shots."));
             blastMinDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Min Duration"), 0.2f, new ConfigDescription("How soon you can fire another shot if you mash."));
@@ -1500,7 +1502,19 @@ namespace BanditReloaded
             Blast.penetrateEnemies = blastPenetrate.Value;
             Blast.useFalloff = blastFalloff.Value;
             Blast.mashSpread = blastMashSpread.Value;
-            Blast.useClassicSound = classicBlastSound.Value;
+
+            switch(blastSound.Value.ToLower())
+            {
+                case "classic":
+                    Blast.attackSoundString = "Play_BanditReloaded_blast_classic";
+                    break;
+                case "new":
+                    Blast.attackSoundString = "Play_BanditReloaded_blast";
+                    break;
+                default:
+                    Blast.attackSoundString = "play_bandit_m1_shot";
+                    break;
+            }
 
             CastSmokescreen.stealthDuration = cloakDuration.Value + 0.8f;
             CastSmokescreen.damageCoefficient = cloakDamage.Value;
