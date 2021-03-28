@@ -43,8 +43,8 @@ namespace EntityStates.BanditReloadedSkills
                     origin = aimRay.origin,
                     aimVector = aimRay.direction,
                     minSpread = 0f,
-                    maxSpread = 0f,
-                    bulletCount = 1,
+                    maxSpread = Mathf.Max(Scatter.spreadBloomValue, base.characterBody.spreadBloomAngle),
+                    bulletCount = Scatter.pelletCount,
                     procCoefficient = Scatter.procCoefficient,
                     damage = Scatter.damageCoefficient * this.damageStat,
                     force = Scatter.force,
@@ -56,44 +56,22 @@ namespace EntityStates.BanditReloadedSkills
                     HitEffectNormal = false,
                     radius = Scatter.bulletRadius,
                     smartCollision = true,
+                    maxDistance = Scatter.range,
                     stopperMask = Scatter.penetrateEnemies ? LayerIndex.world.mask : LayerIndex.entityPrecise.mask
                 };
                 ba.Fire();
-                if (Scatter.pelletCount > 1)
-                {
-                    BulletAttack ba2 = new BulletAttack
-                    {
-                        owner = base.gameObject,
-                        weapon = base.gameObject,
-                        origin = aimRay.origin,
-                        aimVector = aimRay.direction,
-                        minSpread = Scatter.spreadBloomValue / ((float)Scatter.pelletCount - 1f),
-                        maxSpread = Scatter.spreadBloomValue,
-                        bulletCount = Scatter.pelletCount - 1,
-                        procCoefficient = Scatter.procCoefficient,
-                        damage = Scatter.damageCoefficient * this.damageStat,
-                        force = Scatter.force,
-                        falloffModel = BulletAttack.FalloffModel.DefaultBullet,
-                        tracerEffectPrefab = Scatter.tracerEffectPrefab,
-                        muzzleName = muzzleName,
-                        hitEffectPrefab = Scatter.hitEffectPrefab,
-                        isCrit = Util.CheckRoll(this.critStat, base.characterBody.master),
-                        HitEffectNormal = false,
-                        radius = Scatter.bulletRadius,
-                        smartCollision = true,
-                        maxDistance = Scatter.range,
-                        stopperMask = Scatter.penetrateEnemies ? LayerIndex.world.mask : LayerIndex.entityPrecise.mask
-                    };
-                    ba2.Fire();
-                }
                 base.characterBody.AddSpreadBloom(Scatter.spreadBloomValue);
             }
         }
 
         public override void OnExit()
         {
-            base.OnExit();
+            if (!buttonReleased && base.characterBody)
+            {
+                base.characterBody.SetSpreadBloom(0f, false);
+            }
             BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
+            base.OnExit();
         }
 
         public override void FixedUpdate()

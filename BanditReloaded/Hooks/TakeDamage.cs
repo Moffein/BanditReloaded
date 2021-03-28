@@ -22,6 +22,7 @@ namespace BanditReloaded.Hooks
                 bool aliveBeforeHit = self.alive;
                 bool resetCooldownsOnKill = false;
                 bool isDynamiteBundle = false;
+                bool isBarrage = false;
                 float resetDuration = 0f;
                 BanditNetworkCommands bnc = null;
 
@@ -54,43 +55,40 @@ namespace BanditReloaded.Hooks
                     if ((damageInfo.damageType & DamageType.ResetCooldownsOnKill) > 0)
                     {
                         resetCooldownsOnKill = true;
+                        if ((damageInfo.damageType & DamageType.SlowOnHit) > 0)
+                        {
+                            isBarrage = true;
+                        }
 
                         int debuffCount = 0;
-                        BuffDef b;
-                        bool isDot;
                         DotController d = DotController.FindDotController(self.gameObject);
-                        for (int i = 0; i < BuffCatalog.buffCount; i++)
+
+                        foreach (BuffIndex buffType in BuffCatalog.debuffBuffIndices)
                         {
-                            isDot = false;
-                            b = BuffCatalog.GetBuffDef((BuffIndex)i);
-
-                            /*switch ((BuffIndex)i)   //hardcoding is bad TODO FIX
+                            if (self.body.HasBuff(buffType))
                             {
-                                case (BuffIndex.OnFire):
-                                case (BuffIndex.Bleeding):
-                                case (BuffIndex.Poisoned):
-                                case (BuffIndex.Blight):
-                                    isDot = true;
-                                    break;
-                                default:
-                                    break;
-                            }*/
-
-                            if (b.isDebuff || isDot)
-                            {
-                                if (self.body.HasBuff(b.buffIndex))
+                                if (buffType != ModContentPack.skullBuff.buffIndex)
                                 {
-                                    if (b.buffIndex == ModContentPack.skullBuff.buffIndex)
-                                    {
-                                        debuffCount += self.body.GetBuffCount(ModContentPack.skullBuff);
-                                    }
-                                    else
-                                    {
-                                        debuffCount++;
-                                    }
+                                    debuffCount++;
+                                }
+                                else
+                                {
+                                    debuffCount += self.body.GetBuffCount(buffType);
                                 }
                             }
                         }
+                        DotController dotController = DotController.FindDotController(self.gameObject);
+                        if (dotController)
+                        {
+                            for (DotController.DotIndex dotIndex = DotController.DotIndex.Bleed; dotIndex < DotController.DotIndex.Count; dotIndex++)
+                            {
+                                if (dotController.HasDotActive(dotIndex))
+                                {
+                                    debuffCount++;
+                                }
+                            }
+                        }
+
                         float buffDamage = 0f;
                         float buffBaseDamage = damageInfo.damage * specialDebuffBonus;
                         buffDamage = buffBaseDamage * debuffCount;
@@ -163,38 +161,40 @@ namespace BanditReloaded.Hooks
                         graceComponent.TriggerEffects(attackerCB);
                     }
                 }
-                else if (!damageInfo.rejected)
+                else if (!damageInfo.rejected && self.alive)
                 {
                     if (banditAttacker)
                     {
                         if (resetCooldownsOnKill)
                         {
+                            if (isBarrage)
+                            {
+                                self.body.AddTimedBuff(ModContentPack.skullBuff, 3f);
+                            }
+
                             if (graceComponent && resetDuration > 0f)
                             {
-                                self.body.AddTimedBuff(ModContentPack.lightsOutBuff, resetDuration);
                                 graceComponent.AddTimer(attackerCB, damageInfo.damageType, resetDuration);
                             }
-                            if (self.alive)
-                            {
-                                if (specialExecuteThreshold > 0f)
-                                {
-                                    if (((self.body.bodyFlags & CharacterBody.BodyFlags.ImmuneToExecutes) == 0 && !self.body.isChampion) || specialExecuteBosses)
-                                    {
-                                        float executeThreshold = specialExecuteThreshold;
-                                        if (self.body.isElite)
-                                        {
-                                            executeThreshold += damageInfo.inflictor.GetComponent<CharacterBody>().executeEliteHealthFraction;
-                                        }
 
-                                        if (self.alive && (self.combinedHealthFraction < executeThreshold))
-                                        {
-                                            damageInfo.damage = self.combinedHealth / 2f + 1f;
-                                            damageInfo.damageType = (DamageType.ResetCooldownsOnKill | DamageType.BypassArmor);
-                                            damageInfo.procCoefficient = 0f;
-                                            damageInfo.crit = true;
-                                            damageInfo.damageColorIndex = DamageColorIndex.WeakPoint;
-                                            orig(self, damageInfo);
-                                        }
+                            if (specialExecuteThreshold > 0f)
+                            {
+                                if (((self.body.bodyFlags & CharacterBody.BodyFlags.ImmuneToExecutes) == 0 && !self.body.isChampion) || specialExecuteBosses)
+                                {
+                                    float executeThreshold = specialExecuteThreshold;
+                                    if (self.body.isElite)
+                                    {
+                                        executeThreshold += damageInfo.inflictor.GetComponent<CharacterBody>().executeEliteHealthFraction;
+                                    }
+
+                                    if (self.alive && (self.combinedHealthFraction < executeThreshold))
+                                    {
+                                        damageInfo.damage = self.combinedHealth / 2f + 1f;
+                                        damageInfo.damageType = (DamageType.ResetCooldownsOnKill | DamageType.BypassArmor);
+                                        damageInfo.procCoefficient = 0f;
+                                        damageInfo.crit = true;
+                                        damageInfo.damageColorIndex = DamageColorIndex.WeakPoint;
+                                        orig(self, damageInfo);
                                     }
                                 }
                             }

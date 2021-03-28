@@ -4,6 +4,7 @@ using System.Text;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 namespace EntityStates.BanditReloadedSkills
 {
@@ -69,8 +70,12 @@ namespace EntityStates.BanditReloadedSkills
 
         public override void OnExit()
         {
-            base.OnExit();
+            if (!buttonReleased && base.characterBody)
+            {
+                base.characterBody.SetSpreadBloom(0f, false);
+            }
             BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
+            base.OnExit();
         }
 
         public override void FixedUpdate()
@@ -88,7 +93,6 @@ namespace EntityStates.BanditReloadedSkills
         {
             if (this.buttonReleased && base.fixedAge >= this.minDuration)
             {
-                base.characterBody.AddSpreadBloom((Blast.mashSpread - Blast.spreadBloomValue));
                 return InterruptPriority.Any;
             }
             return InterruptPriority.Skill;

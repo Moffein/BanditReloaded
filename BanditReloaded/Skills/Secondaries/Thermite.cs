@@ -9,67 +9,6 @@ using UnityEngine.Networking;
 
 namespace EntityStates.BanditReloadedSkills
 {
-    public class PrepFlare : BaseState
-    {
-        public override void OnEnter()
-        {
-            base.OnEnter();
-            this.duration = PrepFlare.baseDuration / this.attackSpeedStat;
-            base.PlayAnimation("Gesture, Additive", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
-            base.PlayAnimation("Gesture, Override", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
-            Util.PlaySound(PrepFlare.prepSoundString, base.gameObject);
-            this.defaultCrosshairPrefab = base.characterBody.crosshairPrefab;
-            base.characterBody.crosshairPrefab = PrepFlare.specialCrosshairPrefab;
-
-            BanditHelpers.TriggerQuickdraw(base.characterBody.skillLocator);
-
-            if (base.characterBody)
-            {
-                if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
-                {
-                    base.characterBody.ClearTimedBuffs(ModContentPack.cloakDamageBuff);
-                    base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, 1.2f);
-                }
-                base.characterBody.SetAimTimer(this.duration);
-                if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
-                {
-                    base.characterBody.ClearTimedBuffs(ModContentPack.cloakDamageBuff);
-                    base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, 1.2f);
-                }
-            }
-        }
-
-        public override void FixedUpdate()
-        {
-            base.FixedUpdate();
-            if (base.characterBody)
-            {
-                base.characterBody.SetAimTimer(this.duration);
-            }
-            if (base.fixedAge >= this.duration && base.isAuthority && (!base.inputBank || !base.inputBank.skill2.down))
-            {
-                this.outer.SetNextState(new ThermiteBomb());
-                return;
-            }
-        }
-
-        public override void OnExit()
-        {
-            base.characterBody.crosshairPrefab = this.defaultCrosshairPrefab;
-            base.OnExit();
-        }
-
-        public override InterruptPriority GetMinimumInterruptPriority()
-        {
-            return InterruptPriority.PrioritySkill;
-        }
-        public static float baseDuration = 0.4f;
-        public static string prepSoundString = "Play_bandit_M2_load";
-        private float duration;
-        private ChildLocator childLocator;
-        public static GameObject specialCrosshairPrefab = Resources.Load<GameObject>("prefabs/crosshair/banditcrosshairrevolver");
-        private GameObject defaultCrosshairPrefab;
-    }
     public class ThermiteBomb : BaseState
     {
         public override void OnEnter()
@@ -79,10 +18,17 @@ namespace EntityStates.BanditReloadedSkills
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
             Util.PlaySound("Play_BanditReloaded_flare", base.gameObject);
+
+            this.animator = base.GetModelAnimator();
+            if (this.animator)
+            {
+                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+            }
+            base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration * 0.5f);
+
             if (ThermiteBomb.effectPrefab)
             {
-                base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration * 0.5f);
-
                 EffectManager.SimpleMuzzleFlash(ThermiteBomb.effectPrefab, base.gameObject, "MuzzlePistol", false);
             }
             if (base.isAuthority)
@@ -117,7 +63,16 @@ namespace EntityStates.BanditReloadedSkills
 
             if (base.fixedAge >= this.duration && base.isAuthority)
             {
-                this.outer.SetNextStateToMain();
+                if (this.animator)
+                {
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
+                }
+                Transform transform = base.FindModelChild("SpinningPistolFX");
+                if (transform)
+                {
+                    transform.gameObject.SetActive(false);
+                }
+                this.outer.SetNextState(new ExitRevolver());
                 return;
             }
         }
@@ -136,5 +91,7 @@ namespace EntityStates.BanditReloadedSkills
         public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditpistol");
         private float duration;
         private bool playedAnim = false;
+        private Animator animator;
+        private int bodySideWeaponLayerIndex;
     }
 }

@@ -18,6 +18,11 @@ namespace BanditReloaded.Hooks
                     self.moveSpeed *= Mathf.Pow(0.85f, tCount);
                     self.armor -= 2.5f * tCount;
                 }
+                if (self.HasBuff(ModContentPack.skullBuff))
+                {
+                    int skullCount = self.GetBuffCount(ModContentPack.skullBuff);
+                    self.moveSpeed *= Mathf.Max(0.1f, 1f - 0.1f * skullCount);
+                }
                 if (self.HasBuff(ModContentPack.cloakSpeedBuff))
                 {
                     self.moveSpeed *= 1.5f;

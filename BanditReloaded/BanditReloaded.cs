@@ -26,13 +26,13 @@ namespace BanditReloaded
 {
     [BepInDependency("com.bepis.r2api")]
     [BepInDependency("com.DestroyedClone.AncientScepter", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.1.0")]
+    [BepInPlugin("com.Moffein.BanditReloaded_v4", "Bandit Reloaded v4", "4.0.0")]
     [R2API.Utils.R2APISubmoduleDependency(nameof(PrefabAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(SoundAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     class BanditReloaded : BaseUnityPlugin
     {
         #region cfg
-        bool useAltCrosshair, classicOutro;
+        bool useAltCrosshair;
 
         float blastRechargeInterval;
         int blastStock;
@@ -64,44 +64,38 @@ namespace BanditReloaded
 
         #endregion
         public static SurvivorDef item;
-        public static string outroTextSelected = "";
-        public static string outroEasterEgg = "..and so he left, seeking warmth.";
 
-        SkillDef primaryBlastDef, primaryScatterDef, utilityDefA, utilityDefB, utilityAltDef, thermiteDef, acidBombDef, specialLightsOutDef, clusterBombDef, specialBarrageDef, specialBarrageScepterDef, specialLightsOutScepterDef;
+        public SkillDef primaryBlastDef, primaryScatterDef, utilityDefA, utilityAltDef, thermiteDef, acidBombDef, specialLightsOutDef, clusterBombDef, specialBarrageDef, specialBarrageScepterDef, specialLightsOutScepterDef;
 
         public static GameObject BanditBody = null;
-        GameObject BanditMonsterMaster = null;
+        public GameObject BanditMonsterMaster = null;
 
-        GameObject AcidBombObject = null;
-        GameObject ThermiteObject = null;
-        GameObject ClusterBombObject = null;
-        GameObject ClusterBombletObject = null;
+        public GameObject AcidBombObject = null;
+        public GameObject ThermiteObject = null;
+        public GameObject ClusterBombObject = null;
+        public GameObject ClusterBombletObject = null;
 
-        GameObject AcidBombGhostObject = null;
-        GameObject ThermiteGhostObject = null;
-        GameObject ClusterBombGhostObject = null;
-        GameObject ClusterBombletGhostObject = null;
+        public GameObject AcidBombGhostObject = null;
+        public GameObject ThermiteGhostObject = null;
+        public GameObject ClusterBombGhostObject = null;
+        public GameObject ClusterBombletGhostObject = null;
 
-        Color BanditColor = new Color(0.8039216f, 0.482352942f, 0.843137264f);
+        public Color BanditColor = new Color(0.8039216f, 0.482352942f, 0.843137264f);
         String BanditBodyName = "";
 
-        const String assetPrefix = "@MoffeinBanditReloaded";
+        const string assetPrefix = "@MoffeinBanditReloaded";
 
-        Shader hotpoo = Resources.Load<Shader>("Shaders/Deferred/hgstandard");
+        private readonly Shader hotpoo = Resources.Load<Shader>("Shaders/Deferred/hgstandard");
 
         public void RegisterLanguageTokens()
         {
             LanguageAPI.Add("BANDITRELOADED_PASSIVE_NAME", "Quickdraw");
             LanguageAPI.Add("BANDITRELOADED_PASSIVE_DESCRIPTION", "The Bandit <style=cIsUtility>instantly reloads</style> his primary when using other skills.");
 
+            LanguageAPI.Add("BANDITRELOADED_OUTRO_FLAVOR", "..and so he left, with his pyrrhic plunder.");
+            LanguageAPI.Add("BANDITRELOADED_OUTRO_EASTEREGG_FLAVOR", "..and so he left, seeking warmth.");
 
-            string outroNormal = "..and so he left, evading capture once again.";
-            string outroClassic = "..and so he left, with his pyrrhic plunder.";
-            outroTextSelected = classicOutro ? outroClassic : outroNormal;
-            LanguageAPI.Add("BANDITRELOADED_OUTRO_FLAVOR", outroTextSelected);
-            LanguageAPI.Add("BANDITRELOADED_OUTRO_EASTEREGG_FLAVOR", outroEasterEgg);
-
-            LanguageAPI.Add("BANDITRELOADED_BODY_NAME", "Sneedit");
+            LanguageAPI.Add("BANDITRELOADED_BODY_NAME", "Bandit Classic");
             LanguageAPI.Add("BANDITRELOADED_BODY_SUBTITLE", "Wanted Dead or Alive");
 
             string BanditDesc = "The Bandit is a hit-and-run survivor who uses dirty tricks to assassinate his targets.<color=#CCD3E0>" + Environment.NewLine + Environment.NewLine;
@@ -111,9 +105,6 @@ namespace BanditReloaded
             BanditDesc += "< ! > Dealing a killing blow with Lights Out allows you to chain many skills together, allowing for maximum damage AND safety." + Environment.NewLine + Environment.NewLine;
             LanguageAPI.Add("BANDITRELOADED_BODY_DESC", BanditDesc);
 
-            //LanguageAPI.Add("KEYWORD_BANDITRELOADED_RESET", "<style=cKeywordName>Resets Cooldowns</style><style=cSub>Killing an enemy with this ability <style=cIsUtility>resets all skill cooldowns to 0</style>. Enemies with <style=cIsHealth>low HP</style> have a longer cooldown reset time window.</style>");
-
-            //LanguageAPI.Add("KEYWORD_BANDITRELOADED_INVIS", "<style=cKeywordName>Invisible</style><style=cSub>Enemies are unable to target you.</style>");
             LanguageAPI.Add("KEYWORD_BANDITRELOADED_EXECUTE", "<style=cKeywordName>Executing</style><style=cSub>The ability <style=cIsHealth>instantly kills</style> enemies below <style=cIsHealth>"+TakeDamage.specialExecuteThreshold.ToString("P0").Replace(" ", "").Replace(",", "") + " HP</style>.</style>");
             LanguageAPI.Add("KEYWORD_BANDITRELOADED_RAPIDFIRE", "<style=cKeywordName>Rapid-Fire</style><style=cSub>The skill fires faster if you click faster.</style>");
             LanguageAPI.Add("KEYWORD_BANDITRELOADED_THERMITE", "<style=cKeywordName>Thermite</style><style=cSub>Reduce movement speed by <style=cIsDamage>15%</style> per stack. Reduce armor by <style=cIsDamage>2.5</style> per stack.</style>");
@@ -122,7 +113,6 @@ namespace BanditReloaded
 
             LanguageAPI.Add("BANDITRELOADED_PRIMARY_NAME", "Blast");
             LanguageAPI.Add("BANDITRELOADED_PRIMARY_ALT_NAME", "Scatter");
-            //LanguageAPI.Add("BANDITRELOADED_PRIMARY_ALT2_NAME", "Assassinate");
 
             LanguageAPI.Add("BANDITRELOADED_SECONDARY_NAME", "Dynamite Toss");
             LanguageAPI.Add("BANDITRELOADED_SECONDARY_ALT_NAME", "Thermite Flare");
@@ -188,7 +178,6 @@ namespace BanditReloaded
         private void ReadConfig()
         {
             useAltCrosshair = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Alt Crosshair"), true, new ConfigDescription("Uses the unused Bandit-specific crosshair.")).Value;
-            classicOutro = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use RoR1 Outro"), false, new ConfigDescription("Uses Bandit's RoR1 ending.")).Value;
             asEnabled = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Enable unused Assassinate utility*"), false, new ConfigDescription("Enables the Assassinate Utility skill. This skill was disabled due to being poorly coded and not fitting Bandit's kit, but it's left in in case you want to use it. This skill can only be used if Assassinate is enabled on the host.")).Value;
 
             string blastSound = base.Config.Bind<string>(new ConfigDefinition("10 - Primary - Blast", "Firing Sound"), "vanilla", new ConfigDescription("Which sound Blast plays when firing. Accepted values are 'new', 'classic', and 'vanilla'.")).Value;
@@ -210,26 +199,25 @@ namespace BanditReloaded
             Blast.penetrateEnemies = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Penetrate Enemies"), true, new ConfigDescription("Shots pierce enemies.")).Value;
             Blast.bulletRadius = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Shot Radius"), 0.4f, new ConfigDescription("How wide Blast's shots are.")).Value;
             Blast.force = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Force"), 600f, new ConfigDescription("Push force per shot.")).Value;
-            Blast.spreadBloomValue = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Spread"), 0f, new ConfigDescription("Amount of spread with added each shot.")).Value;
-            Blast.mashSpread = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Mash Spread"), 0.4f, new ConfigDescription("Amount of spread with added each shot when mashing.")).Value;
+            Blast.spreadBloomValue = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Spread"), 0.5f, new ConfigDescription("Amount of spread with added when mashing.")).Value;
             Blast.recoilAmplitude = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Recoil"), 1.4f, new ConfigDescription("How hard the gun kicks when shooting.")).Value;
             Blast.maxDistance = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Range"), 300f, new ConfigDescription("How far Blast can reach.")).Value;
             Blast.useFalloff = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Use Falloff"), false, new ConfigDescription("Shots deal less damage over range.")).Value;
             blastStock = base.Config.Bind<int>(new ConfigDefinition("10 - Primary - Blast", "Stock"), 8, new ConfigDescription("How many shots can be fired before reloading.")).Value;
             blastRechargeInterval = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Reload Time"), 2f, new ConfigDescription("How long it takes to reload. Set to 0 to disable reloading.")).Value;
 
-            Scatter.damageCoefficient = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Damage"), 0.65f, new ConfigDescription("How much damage each pellet of Scatter deals.")).Value;
+            Scatter.damageCoefficient = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Damage"), 0.7f, new ConfigDescription("How much damage each pellet of Scatter deals.")).Value;
             Scatter.pelletCount = base.Config.Bind<uint>(new ConfigDefinition("11 - Primary - Scatter", "Pellets"), 8, new ConfigDescription("How many pellets Scatter shoots.")).Value;
             Scatter.procCoefficient = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Proc Coefficient"), 0.75f, new ConfigDescription("Affects the chance and power of each pellet's procs.")).Value;
             Scatter.baseMaxDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Fire Rate"), 0.625f, new ConfigDescription("Time between shots.")).Value;
-            Scatter.baseMinDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Min Duration"), 0f, new ConfigDescription("How soon you can fire another shot if you mash.")).Value;
+            Scatter.baseMinDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Min Duration"), 0.625f, new ConfigDescription("How soon you can fire another shot if you mash.")).Value;
             Scatter.penetrateEnemies = base.Config.Bind<bool>(new ConfigDefinition("11 - Primary - Scatter", "Penetrate Enemies"), true, new ConfigDescription("Shots pierce enemies.")).Value;
             Scatter.bulletRadius = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Shot Radius"), 0.4f, new ConfigDescription("How wide Scatter's pellets are.")).Value;
             Scatter.force = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Force"), 200f, new ConfigDescription("Push force per pellet.")).Value;
             Scatter.spreadBloomValue = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Spread"), 2.5f, new ConfigDescription("Size of the pellet spread.")).Value;
             Scatter.recoilAmplitude = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Recoil"), 2.6f, new ConfigDescription("How hard the gun kicks when shooting.")).Value;
             Scatter.range = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Range"), 200f, new ConfigDescription("How far Scatter can reach.")).Value;
-            scatterStock = base.Config.Bind<int>(new ConfigDefinition("11 - Primary - Scatter", "Stock"), 4, new ConfigDescription("How many shots Scatter can hold.")).Value;
+            scatterStock = base.Config.Bind<int>(new ConfigDefinition("11 - Primary - Scatter", "Stock"), 6, new ConfigDescription("How many shots Scatter can hold.")).Value;
             scatterRechargeInterval = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Reload Time"), 2f, new ConfigDescription("How much time it takes to reload. Set to 0 to disable reloading.")).Value;
 
             ClusterBomb.damageCoefficient = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Dynamite Toss", "Damage*"), 3.9f, new ConfigDescription("How much damage Dynamite Toss deals.")).Value;
@@ -802,7 +790,6 @@ namespace BanditReloaded
             ModContentPack.entityStates.Add(typeof(PrepLightsOut));
             ModContentPack.entityStates.Add(typeof(FireLightsOut));
             ModContentPack.entityStates.Add(typeof(AcidBomb));
-            ModContentPack.entityStates.Add(typeof(PrepFlare));
             ModContentPack.entityStates.Add(typeof(ThermiteBomb));
             ModContentPack.entityStates.Add(typeof(Scatter));
             ModContentPack.entityStates.Add(typeof(ClusterBomb));
@@ -1112,8 +1099,6 @@ namespace BanditReloaded
         {
             AncientScepter.AncientScepterItem.instance.RegisterScepterSkill(specialLightsOutScepterDef, BanditBodyName, SkillSlot.Special, 0);
             AncientScepter.AncientScepterItem.instance.RegisterScepterSkill(specialBarrageScepterDef, BanditBodyName, SkillSlot.Special, 1);
-            /*ThinkInvisible.ClassicItems.Scepter_V2.instance.RegisterScepterSkill(specialLightsOutScepterDef, BanditBodyName, SkillSlot.Special, 0);
-            ThinkInvisible.ClassicItems.Scepter_V2.instance.RegisterScepterSkill(specialBarrageScepterDef, BanditBodyName, SkillSlot.Special, 1);*/
         }
 
         private void LoadResources()

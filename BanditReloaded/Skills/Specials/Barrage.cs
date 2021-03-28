@@ -25,7 +25,7 @@ namespace EntityStates.BanditReloadedSkills
             base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration);
 
 
-            Util.PlayAttackSpeedSound(PrepBarrage.prepSoundString, base.gameObject, 1.2f);
+            Util.PlaySound(PrepBarrage.prepSoundString, base.gameObject);
 
             if (base.characterBody)
             {
@@ -74,7 +74,7 @@ namespace EntityStates.BanditReloadedSkills
             return InterruptPriority.Pain;
         }
         public static float baseDuration;
-        public static string prepSoundString = "Play_bandit_M2_load";
+        public static string prepSoundString = "Play_bandit2_R_load";
         private float duration;
         private ChildLocator childLocator;
         private Animator animator;
