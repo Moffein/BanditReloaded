@@ -81,11 +81,7 @@ namespace EntityStates.BanditReloadedSkills
             Util.PlaySound("Play_BanditReloaded_flare", base.gameObject);
             if (ThermiteBomb.effectPrefab)
             {
-                /*base.PlayAnimation("Gesture, Additive", "FireShotgun", "FireShotgun.playbackRate", this.duration * 2f);
-                base.PlayAnimation("Gesture, Override", "FireShotgun", "FireShotgun.playbackRate", this.duration * 2f);*/
-
-                base.PlayAnimation("Gesture, Additive", "PrepRevolver", "PrepRevolver.playbackRate", this.duration * 0.5f);
-                base.PlayAnimation("Gesture, Override", "PrepRevolver", "PrepRevolver.playbackRate", this.duration * 0.5f);
+                base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration * 0.5f);
 
                 EffectManager.SimpleMuzzleFlash(ThermiteBomb.effectPrefab, base.gameObject, "MuzzlePistol", false);
             }
@@ -116,7 +112,7 @@ namespace EntityStates.BanditReloadedSkills
             if (!playedAnim && base.fixedAge > this.duration*0.5f)
             {
                 playedAnim = true;
-                base.PlayAnimation("Gesture", "FireRevolver", "FireRevolver.playbackRate", this.duration);
+                base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", this.duration);
             }
 
             if (base.fixedAge >= this.duration && base.isAuthority)

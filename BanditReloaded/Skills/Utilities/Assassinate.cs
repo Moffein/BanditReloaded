@@ -102,7 +102,7 @@ namespace EntityStates.BanditReloadedSkills
                 if (!playedSound)
                 {
                     playedSound = true;
-                    Util.PlayScaledSound(Assassinate.chargeSoundString, base.gameObject, Assassinate.perfectChargeDuration);
+                    Util.PlayAttackSpeedSound(Assassinate.chargeSoundString, base.gameObject, Assassinate.perfectChargeDuration);
                 }
                 if (!chargeEffect)
                 {

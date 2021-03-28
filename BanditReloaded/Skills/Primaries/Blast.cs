@@ -20,22 +20,15 @@ namespace EntityStates.BanditReloadedSkills
             base.characterBody.skillLocator.primary.rechargeStopwatch = 0f;
             if (base.characterBody.skillLocator.primary.stock == 0)
             {
-                Util.PlayScaledSound("Play_commando_M2_grenade_throw", base.gameObject, 1.2f);
+                Util.PlaySound("Play_commando_M2_grenade_throw", base.gameObject);
             }
 
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
 
-            if (base.characterBody.skillLocator.primary.baseRechargeInterval <= 0f)
-            {
-                base.PlayAnimation("Gesture, Additive", "FireShotgun", "FireShotgun.playbackRate", 1.1f);
-                base.PlayAnimation("Gesture, Override", "FireShotgun", "FireShotgun.playbackRate", 1.1f);
-            }
-            else
-            {
-                base.PlayAnimation("Gesture, Additive", "FireShotgun", "FireShotgun.playbackRate", base.characterBody.skillLocator.primary.CalculateFinalRechargeInterval() * 1.72f);
-                base.PlayAnimation("Gesture, Override", "FireShotgun", "FireShotgun.playbackRate", base.characterBody.skillLocator.primary.CalculateFinalRechargeInterval() * 1.72f);
-            }
+
+            base.PlayAnimation("Gesture, Additive", "FireMainWeapon", "FireMainWeapon.playbackRate", this.maxDuration);
+
             string muzzleName = "MuzzleShotgun";
             if (Blast.effectPrefab)
             {

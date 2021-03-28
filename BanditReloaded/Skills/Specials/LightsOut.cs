@@ -13,8 +13,15 @@ namespace EntityStates.BanditReloadedSkills
         {
             base.OnEnter();
             this.duration = PrepLightsOut.baseDuration / this.attackSpeedStat;
-            base.PlayAnimation("Gesture, Additive", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
-            base.PlayAnimation("Gesture, Override", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
+
+            this.animator = base.GetModelAnimator();
+            if (this.animator)
+            {
+                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+            }
+            base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration);
+
             Util.PlaySound(PrepLightsOut.prepSoundString, base.gameObject);
             this.defaultCrosshairPrefab = base.characterBody.crosshairPrefab;
             base.characterBody.crosshairPrefab = PrepLightsOut.specialCrosshairPrefab;
@@ -50,9 +57,15 @@ namespace EntityStates.BanditReloadedSkills
         {
             base.characterBody.crosshairPrefab = this.defaultCrosshairPrefab;
 
-            base.PlayAnimation("Gesture, Additive", "FireRevolver");
-            base.PlayAnimation("Gesture, Override", "FireRevolver");
-
+            if (this.animator)
+            {
+                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
+            }
+            Transform transform = base.FindModelChild("SpinningPistolFX");
+            if (transform)
+            {
+                transform.gameObject.SetActive(false);
+            }
             base.OnExit();
         }
 
@@ -64,8 +77,10 @@ namespace EntityStates.BanditReloadedSkills
         public static string prepSoundString = "Play_bandit_M2_load";
         private float duration;
         private ChildLocator childLocator;
-        public static GameObject specialCrosshairPrefab = Resources.Load<GameObject>("prefabs/crosshair/banditcrosshairrevolver");
+        public static GameObject specialCrosshairPrefab = Resources.Load<GameObject>("prefabs/crosshair/Bandit2CrosshairPrepRevolver");
         private GameObject defaultCrosshairPrefab;
+        private Animator animator;
+        private int bodySideWeaponLayerIndex;
     }
     public class FireLightsOut : BaseState
     {
@@ -78,6 +93,14 @@ namespace EntityStates.BanditReloadedSkills
             base.StartAimMode(aimRay, 2f, false);
             string muzzleName = "MuzzlePistol";
             Util.PlaySound(FireLightsOut.attackSoundString, base.gameObject);
+
+            this.animator = base.GetModelAnimator();
+            if (this.animator)
+            {
+                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+            }
+            base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", 1f);
 
             if (FireLightsOut.effectPrefab)
             {
@@ -121,7 +144,16 @@ namespace EntityStates.BanditReloadedSkills
             base.FixedUpdate();
             if (base.fixedAge >= this.duration && base.isAuthority)
             {
-                this.outer.SetNextStateToMain();
+                if (this.animator)
+                {
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
+                }
+                Transform transform = base.FindModelChild("SpinningPistolFX");
+                if (transform)
+                {
+                    transform.gameObject.SetActive(false);
+                }
+                this.outer.SetNextState(new ExitRevolver());
                 return;
             }
         }
@@ -137,9 +169,11 @@ namespace EntityStates.BanditReloadedSkills
         public static float damageCoefficient;
         public static float force;
         public static float baseDuration;
-        public static string attackSoundString = "Play_bandit_M2_shot";
+        public static string attackSoundString = "Play_bandit2_R_fire";
         public static float recoilAmplitude = 4f;
         private ChildLocator childLocator;
         private float duration;
+        private Animator animator;
+        private int bodySideWeaponLayerIndex;
     }
 }

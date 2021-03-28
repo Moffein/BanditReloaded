@@ -24,14 +24,14 @@ using UnityEngine.Networking;
 namespace BanditReloaded
 {
     [BepInDependency("com.bepis.r2api")]
-    [BepInDependency("com.ThinkInvisible.ClassicItems", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.0.8")]
-    [R2API.Utils.R2APISubmoduleDependency(nameof(SurvivorAPI), nameof(LoadoutAPI), nameof(PrefabAPI), nameof(BuffAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(SoundAPI), nameof(EffectAPI))]
+    [BepInDependency("com.DestroyedClone.AncientScepter", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInPlugin("com.Moffein.BanditReloaded_v3", "Bandit Reloaded v3", "3.1.0")]
+    [R2API.Utils.R2APISubmoduleDependency(nameof(PrefabAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(SoundAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     class BanditReloaded : BaseUnityPlugin
     {
         #region cfg
-        ConfigEntry<bool> usePassive, cloakAnim, useAltCrosshair, classicOutro;
+        ConfigEntry<bool> usePassive, useAltCrosshair, classicOutro;
 
         ConfigEntry<float> specialExecuteThreshold, loGracePeriodMin, loGracePeriodMax, specialDebuffBonus;
         ConfigEntry<bool> specialExecuteBosses;
@@ -120,13 +120,13 @@ namespace BanditReloaded
             LanguageAPI.Add("BANDITRELOADED_PASSIVE_DESCRIPTION", "The Bandit <style=cIsUtility>instantly reloads</style> his primary when using other skills.");
 
 
-            string outroNormal = "..and so he left, empty-handed.";
+            string outroNormal = "..and so he left, evading capture once again.";
             string outroClassic = "..and so he left, with his pyrrhic plunder.";
             outroTextSelected = classicOutro.Value ? outroClassic : outroNormal;
             LanguageAPI.Add("BANDITRELOADED_OUTRO_FLAVOR", outroTextSelected);
             LanguageAPI.Add("BANDITRELOADED_OUTRO_EASTEREGG_FLAVOR", outroEasterEgg);
 
-            LanguageAPI.Add("BANDITRELOADED_BODY_NAME", "Bandit");
+            LanguageAPI.Add("BANDITRELOADED_BODY_NAME", "Sneedit");
             LanguageAPI.Add("BANDITRELOADED_BODY_SUBTITLE", "Wanted Dead or Alive");
 
             string BanditDesc = "The Bandit is a hit-and-run survivor who uses dirty tricks to assassinate his targets.<color=#CCD3E0>" + Environment.NewLine + Environment.NewLine;
@@ -136,9 +136,9 @@ namespace BanditReloaded
             BanditDesc += "< ! > Dealing a killing blow with Lights Out allows you to chain many skills together, allowing for maximum damage AND safety." + Environment.NewLine + Environment.NewLine;
             LanguageAPI.Add("BANDITRELOADED_BODY_DESC", BanditDesc);
 
-            LanguageAPI.Add("KEYWORD_BANDITRELOADED_RESET", "<style=cKeywordName>Resets Cooldowns</style><style=cSub>Killing an enemy with this ability <style=cIsUtility>resets all skill cooldowns to 0</style>. Enemies with <style=cIsHealth>low HP</style> have a longer cooldown reset time window.</style>");
+            //LanguageAPI.Add("KEYWORD_BANDITRELOADED_RESET", "<style=cKeywordName>Resets Cooldowns</style><style=cSub>Killing an enemy with this ability <style=cIsUtility>resets all skill cooldowns to 0</style>. Enemies with <style=cIsHealth>low HP</style> have a longer cooldown reset time window.</style>");
 
-            LanguageAPI.Add("KEYWORD_BANDITRELOADED_INVIS", "<style=cKeywordName>Invisible</style><style=cSub>Enemies are unable to target you.</style>");
+            //LanguageAPI.Add("KEYWORD_BANDITRELOADED_INVIS", "<style=cKeywordName>Invisible</style><style=cSub>Enemies are unable to target you.</style>");
             LanguageAPI.Add("KEYWORD_BANDITRELOADED_EXECUTE", "<style=cKeywordName>Executing</style><style=cSub>The ability <style=cIsHealth>instantly kills</style> enemies below <style=cIsHealth>"+specialExecuteThreshold.Value.ToString("P0").Replace(" ", "").Replace(",", "") + " HP</style>.</style>");
             LanguageAPI.Add("KEYWORD_BANDITRELOADED_RAPIDFIRE", "<style=cKeywordName>Rapid-Fire</style><style=cSub>The skill fires faster if you click faster.</style>");
             LanguageAPI.Add("KEYWORD_BANDITRELOADED_THERMITE", "<style=cKeywordName>Thermite</style><style=cSub>Reduce movement speed by <style=cIsDamage>15%</style> per stack. Reduce armor by <style=cIsDamage>2.5</style> per stack.</style>");
@@ -167,6 +167,10 @@ namespace BanditReloaded
             CastSmokescreenNoDelay.destealthMaterial = EntityStates.Commando.CommandoWeapon.CastSmokescreenNoDelay.destealthMaterial;
             Assassinate.chargeupVfxPrefab = EntityStates.Toolbot.ChargeSpear.chargeupVfxPrefab;
             Assassinate.holdChargeVfxPrefab = EntityStates.Toolbot.ChargeSpear.holdChargeVfxPrefab;
+
+            BanditReloaded.lightsOutBuff = BuffCatalog.FindBuffIndex("BanditReloadedMarkedForDeath");
+            BanditReloaded.thermiteBuff = BuffCatalog.FindBuffIndex("BanditReloadedThermite");
+            BanditReloaded.cloakDamageBuff = BuffCatalog.FindBuffIndex("BanditReloadedCloakDamage");
         }
 
         public void Awake()
@@ -181,56 +185,22 @@ namespace BanditReloaded
             InitSkills();
             AssignSkills();
             CreateMaster();
-            AddSkin();
+            CreateLightsOutBuff();
 
             RegisterLanguageTokens();
 
             BanditBody.GetComponent<CharacterBody>().preferredPodPrefab = Resources.Load<GameObject>("prefabs/networkedobjects/survivorpod");
-            GameObject banditDisplay = BanditBody.GetComponent<ModelLocator>().modelTransform.gameObject;
-            banditDisplay.AddComponent<MenuAnimComponent>();
+            GameObject banditDisplay = Resources.Load<GameObject>("Prefabs/CharacterDisplays/Bandit2Display");
 
-            SkillCatalog.getAdditionalSkillDefs += delegate (List<SkillDef> list)
-            {
-                list.Add(primaryBlastDef);
-                list.Add(primaryScatterDef);
-                list.Add(thermiteDef);
-                list.Add(acidBombDef);
-                list.Add(utilityDefA);
-                list.Add(utilityDefB);
-                list.Add(specialBarrageDef);
-                list.Add(clusterBombDef);
-                //list.Add(utilityAltDef);
-                list.Add(specialLightsOutDef);
-            };
-
-            item = new SurvivorDef
-            {
-                name = "BanditReloaded",
-                bodyPrefab = BanditBody,
-                descriptionToken = "BANDITRELOADED_BODY_DESC",
-                displayPrefab = banditDisplay,
-                primaryColor = BanditColor,
-                unlockableName = "",
-                //displayNameToken = BanditBody.GetComponent<CharacterBody>().baseNameToken,
-                outroFlavorToken = "BANDITRELOADED_OUTRO_FLAVOR"
-            };
-            SurvivorAPI.AddSurvivor(item);
-
-            On.RoR2.CameraRigController.OnEnable += (orig, self) =>
-            {
-                SceneDef sd = RoR2.SceneCatalog.GetSceneDefForCurrentScene();
-                if (sd && sd.baseSceneName.Equals("lobby"))
-                {
-                    self.enableFading = false;
-                }
-                orig(self);
-            };
-
-            On.RoR2.BuffCatalog.Init += (orig) =>
-            {
-                CreateLightsOutBuff();
-                orig();
-            };
+            item = SurvivorDef.CreateInstance<SurvivorDef>();
+            item.cachedName = "BanditReloaded";
+            item.bodyPrefab = BanditBody;
+            item.descriptionToken = "BANDITRELOADED_BODY_DESC";
+            item.displayPrefab = banditDisplay;
+            item.primaryColor = BanditColor;
+            item.unlockableName = "";
+            item.outroFlavorToken = "BANDITRELOADED_OUTRO_FLAVOR";
+            ModContentPack.survivorDefs.Add(item);
 
             On.RoR2.SkillLocator.ResetSkills += (orig, self) =>
             {
@@ -241,12 +211,12 @@ namespace BanditReloaded
                 }
             };
 
-            On.RoR2.CharacterModel.UpdateItemDisplay += (orig, self, inv) =>
+            /*On.RoR2.CharacterModel.UpdateItemDisplay += (orig, self, inv) =>
             {
                 orig(self, inv);
                 if (self.name == "mdlBandit")
                 {
-                    if (inv.GetItemCount(ItemIndex.DeathMark) > 0 && inv.GetItemCount(ItemIndex.Talisman) > 0 && inv.GetItemCount(ItemIndex.HealOnCrit) > 0 && inv.GetItemCount(ItemIndex.LunarUtilityReplacement) > 0)
+                    if (inv.GetItemCount(ItemIndex.DeathMark > 0 && inv.GetItemCount(ItemIndex.Talisman) > 0 && inv.GetItemCount(ItemIndex.HealOnCrit) > 0 && inv.GetItemCount(ItemIndex.LunarUtilityReplacement) > 0)
                     {
                         item.outroFlavorToken = "BANDITRELOADED_OUTRO_EASTEREGG_FLAVOR";
                     }
@@ -255,7 +225,7 @@ namespace BanditReloaded
                         item.outroFlavorToken = "BANDITRELOADED_OUTRO_FLAVOR";
                     }
                 }
-            };
+            };*/
 
             On.RoR2.CharacterBody.RecalculateStats += (orig, self) =>
             {
@@ -263,8 +233,8 @@ namespace BanditReloaded
                 if (self.HasBuff(thermiteBuff))
                 {
                     int tCount = self.GetBuffCount(thermiteBuff);
-                    self.moveSpeed = self.moveSpeed * Mathf.Pow(0.85f, tCount);
-                    self.armor = self.armor - 2.5f * tCount;
+                    self.moveSpeed *= Mathf.Pow(0.85f, tCount);
+                    self.armor -= 2.5f * tCount;
                 }
                 int loCount = self.GetBuffCount(lightsOutBuff);
                 self.moveSpeed = self.moveSpeed * Mathf.Pow(0.85f, loCount);
@@ -275,7 +245,7 @@ namespace BanditReloaded
                 orig(self);
                 if (self.HasBuff(cloakDamageBuff))
                 {
-                    self.damageStat *= 1.3f;
+                    self.damageStat *= 1.5f;
                 }
             };
 
@@ -328,7 +298,7 @@ namespace BanditReloaded
                             isDot = false;
                             b = BuffCatalog.GetBuffDef((BuffIndex)i);
 
-                            switch ((BuffIndex)i)   //hardcoding is bad
+                            /*switch ((BuffIndex)i)   //hardcoding is bad TODO FIX
                             {
                                 case (BuffIndex.OnFire):
                                 case (BuffIndex.Bleeding):
@@ -338,7 +308,7 @@ namespace BanditReloaded
                                     break;
                                 default:
                                     break;
-                            }
+                            }*/
 
                             if (b.isDebuff || isDot)
                             {
@@ -519,36 +489,20 @@ namespace BanditReloaded
                     }
                 }
             };
-            base.StartCoroutine(this.FixIce());
-        }
-
-        //Credits to MisterName for the ice explosion fix
-        private IEnumerator FixIce()
-        {
-            for (; ; )
-            {
-                if (BanditBody != null && BanditBody.GetComponent<SetStateOnHurt>() != null && BanditBody.GetComponent<SetStateOnHurt>().idleStateMachine != null && BanditBody.GetComponent<SetStateOnHurt>().idleStateMachine.Length != 0)
-                {
-                    BanditBody.GetComponent<SetStateOnHurt>().idleStateMachine[0] = BanditBody.GetComponent<SetStateOnHurt>().idleStateMachine[1];
-                    yield return null;
-                }
-                yield return new WaitForFixedUpdate();
-            }
-            yield break;
+            ModContentPack.CreateContentPack();
         }
 
         private void ReadConfig()
         {
             usePassive = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Enable Passive"), true, new ConfigDescription("Makes Bandit insta-reload his primary when using other skills."));
-            cloakAnim = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Cloak Anim"), false, new ConfigDescription("Enables the unused Smokebomb entry animation."));
             useAltCrosshair = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Alt Crosshair"), true, new ConfigDescription("Uses the unused Bandit-specific crosshair."));
             classicOutro = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use RoR1 Outro"), false, new ConfigDescription("Uses Bandit's RoR1 ending."));
             asEnabled = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Enable unused Assassinate utility*"), false, new ConfigDescription("Enables the Assassinate Utility skill. This skill was disabled due to being poorly coded and not fitting Bandit's kit, but it's left in in case you want to use it. This skill can only be used if Assassinate is enabled on the host."));
 
             blastSound = base.Config.Bind<string>(new ConfigDefinition("10 - Primary - Blast", "Firing Sound"), "vanilla", new ConfigDescription("Which sound Blast plays when firing. Accepted values are 'new', 'classic', and 'vanilla'."));
-            blastDamage = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Damage"), 2.3f, new ConfigDescription("How much damage Blast deals."));
+            blastDamage = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Damage"), 2.5f, new ConfigDescription("How much damage Blast deals."));
             blastMaxDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Fire Rate"), 0.3f, new ConfigDescription("Time between shots."));
-            blastMinDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Min Duration"), 0.2f, new ConfigDescription("How soon you can fire another shot if you mash."));
+            blastMinDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Min Duration"), 0f, new ConfigDescription("How soon you can fire another shot if you mash."));
             blastPenetrate = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Penetrate Enemies"), true, new ConfigDescription("Shots pierce enemies."));
             blastRadius = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Shot Radius"), 0.4f, new ConfigDescription("How wide Blast's shots are."));
             blastForce = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Force"), 600f, new ConfigDescription("Push force per shot."));
@@ -556,22 +510,22 @@ namespace BanditReloaded
             blastMashSpread = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Mash Spread"), 0.4f, new ConfigDescription("Amount of spread with added each shot when mashing."));
             blastRecoil = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Recoil"), 1.4f, new ConfigDescription("How hard the gun kicks when shooting."));
             blastRange = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Range"), 300f, new ConfigDescription("How far Blast can reach."));
-            blastFalloff = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Use Falloff"), true, new ConfigDescription("Shots deal less damage over range."));
-            blastStock = base.Config.Bind<int>(new ConfigDefinition("10 - Primary - Blast", "Stock"), 10, new ConfigDescription("How many shots can be fired before reloading."));
-            blastRechargeInterval = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Reload Time"), 2.0f, new ConfigDescription("How long it takes to reload. Set to 0 to disable reloading."));
+            blastFalloff = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Use Falloff"), false, new ConfigDescription("Shots deal less damage over range."));
+            blastStock = base.Config.Bind<int>(new ConfigDefinition("10 - Primary - Blast", "Stock"), 8, new ConfigDescription("How many shots can be fired before reloading."));
+            blastRechargeInterval = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Reload Time"), 2f, new ConfigDescription("How long it takes to reload. Set to 0 to disable reloading."));
             
             scatterDamage = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Damage"), 0.65f, new ConfigDescription("How much damage each pellet of Scatter deals."));
             scatterPellets = base.Config.Bind<uint>(new ConfigDefinition("11 - Primary - Scatter", "Pellets"), 8, new ConfigDescription("How many pellets Scatter shoots."));
             scatterProcCoefficient = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Proc Coefficient"), 0.75f, new ConfigDescription("Affects the chance and power of each pellet's procs."));
             scatterMaxDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Fire Rate"), 0.625f, new ConfigDescription("Time between shots."));
-            scatterMinDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Min Duration"), 0.625f, new ConfigDescription("How soon you can fire another shot if you mash."));
+            scatterMinDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Min Duration"), 0f, new ConfigDescription("How soon you can fire another shot if you mash."));
             scatterPenetrate = base.Config.Bind<bool>(new ConfigDefinition("11 - Primary - Scatter", "Penetrate Enemies"), true, new ConfigDescription("Shots pierce enemies."));
             scatterRadius = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Shot Radius"), 0.4f, new ConfigDescription("How wide Scatter's pellets are."));
             scatterForce = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Force"), 200f, new ConfigDescription("Push force per pellet."));
             scatterSpread = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Spread"), 2.5f, new ConfigDescription("Size of the pellet spread."));
             scatterRecoil = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Recoil"), 2.6f, new ConfigDescription("How hard the gun kicks when shooting."));
             scatterRange = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Range"), 200f, new ConfigDescription("How far Scatter can reach."));
-            scatterStock = base.Config.Bind<int>(new ConfigDefinition("11 - Primary - Scatter", "Stock"), 6, new ConfigDescription("How many shots Scatter can hold."));
+            scatterStock = base.Config.Bind<int>(new ConfigDefinition("11 - Primary - Scatter", "Stock"), 4, new ConfigDescription("How many shots Scatter can hold."));
             scatterRechargeInterval = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Reload Time"), 2f, new ConfigDescription("How much time it takes to reload. Set to 0 to disable reloading."));
             
             cbDamage = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Dynamite Toss", "Damage*"), 3.9f, new ConfigDescription("How much damage Dynamite Toss deals."));
@@ -581,7 +535,7 @@ namespace BanditReloaded
             cbBombletRadius = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Dynamite Toss", "Bomblet Radius*"), 8f, new ConfigDescription("How large the mini explosions are."));
             cbBombletProcCoefficient = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Dynamite Toss", "Bomblet Proc Coefficient*"), 0.6f, new ConfigDescription("Affects the chance and power of Dynamite Toss Bomblet procs."));
             cbFireRate = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Dynamite Toss", "Throw Duration"), 0.4f, new ConfigDescription("How long it takes to throw a Dynamite Toss."));
-            cbCooldown = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Dynamite Toss", "Cooldown"), 7f, new ConfigDescription("How long it takes for Dynamite Toss to recharge."));
+            cbCooldown = base.Config.Bind<float>(new ConfigDefinition("20 - Secondary - Dynamite Toss", "Cooldown"), 6f, new ConfigDescription("How long it takes for Dynamite Toss to recharge."));
             cbStock = base.Config.Bind<int>(new ConfigDefinition("20 - Secondary - Dynamite Toss", "Stock"), 1, new ConfigDescription("How much Dynamite you start with."));
 
             acidDamage = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Damage"), 2.7f, new ConfigDescription("How much damage Acid Bomb deals."));
@@ -589,30 +543,30 @@ namespace BanditReloaded
             acidRadius = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Radius*"), 8f, new ConfigDescription("How large the explosion is."));
             acidProcCoefficient = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Acid Proc Coefficient*"), 0.2f, new ConfigDescription("Affects the chance and power of Acid Bomb's procs."));
             acidFireRate = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Throw Duration"), 0.4f, new ConfigDescription("How long it takes to throw a Acid Bomb."));
-            acidCooldown = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Cooldown"), 7f, new ConfigDescription("How long Acid Bomb takes to recharge."));
+            acidCooldown = base.Config.Bind<float>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Cooldown"), 6f, new ConfigDescription("How long Acid Bomb takes to recharge."));
             acidStock = base.Config.Bind<int>(new ConfigDefinition("21 - Secondary - Acid Bomb", "Stock"), 1, new ConfigDescription("How many Acid Bombs you start with."));
 
             thermiteDamage = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Damage"), 4.8f, new ConfigDescription("How much damage Thermite Flare deals."));
             thermiteBurnDamageMult = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Burn Damage*"), 0.6f, new ConfigDescription("How much damage Thermite Flare deals per second."));
             thermiteBurnDuration = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Burn Duration*"), 7f, new ConfigDescription("How long the burn lasts for."));
-            thermiteProcCoefficient = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Burn Proc Coefficient*"), 0.2f, new ConfigDescription("Affects the chance and power of Thermite Flare's procs."));
+            thermiteProcCoefficient = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Burn Proc Coefficient*"), 0.4f, new ConfigDescription("Affects the chance and power of Thermite Flare's procs."));
             thermiteRadius = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Radius*"), 10f, new ConfigDescription("How large the explosion is. Radius is halved if it doesn't stick to a target."));
             thermiteFireRate = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Throw Duration"), 0.4f, new ConfigDescription("How long it takes to throw a Thermite Flare."));
-            thermiteCooldown = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Cooldown"), 7f, new ConfigDescription("How long Thermite Flare takes to recharge."));
+            thermiteCooldown = base.Config.Bind<float>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Cooldown"), 6f, new ConfigDescription("How long Thermite Flare takes to recharge."));
             thermiteStock = base.Config.Bind<int>(new ConfigDefinition("22 - Secondary - Thermite Flare", "Stock"), 1, new ConfigDescription("How many Thermite Flares you start with."));
 
-            cloakDamage = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Damage*"), 1.5f, new ConfigDescription("How much damage Smokebomb deals."));
+            cloakDamage = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Damage*"), 2f, new ConfigDescription("How much damage Smokebomb deals."));
             cloakRadius = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Radius*"), 10f, new ConfigDescription("Size of the stun radius."));
             cloakDuration = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Duration*"), 3f, new ConfigDescription("How long Smokebomb lasts."));
             cloakMinDuration = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Minimum Duration"), 0.3f, new ConfigDescription("Minimum amount of time Smokebomb lasts for."));
             cloakNonLethal = base.Config.Bind<bool>(new ConfigDefinition("30 - Utility - Smokebomb", "Nonlethal"), true, new ConfigDescription("Prevents Smokebomb from landing the killing blow on enemies."));
             cloakProcCoefficient = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Proc Coefficient"), 0.5f, new ConfigDescription("Affects the chance and power of Smokebomb's procs."));
-            cloakCooldown = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Cooldown"), 8f, new ConfigDescription("How long Smokebomb takes to recharge."));
+            cloakCooldown = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Cooldown"), 6f, new ConfigDescription("How long Smokebomb takes to recharge."));
             cloakStock = base.Config.Bind<int>(new ConfigDefinition("30 - Utility - Smokebomb", "Stock"), 1, new ConfigDescription("How many charges Smokebomb has."));
 
             specialDebuffBonus = base.Config.Bind<float>(new ConfigDefinition("40 - Special Settings", "Special Debuff Bonus Multiplier*"), 0.5f, new ConfigDescription("Multiplier for how big the debuff damage bonus should be for Bandit's specials."));
-            specialExecuteThreshold = base.Config.Bind<float>(new ConfigDefinition("40 - Special Settings", "Special Execute Threshold*"), 0f, new ConfigDescription("Bandit's Specials instakill enemies that fall below this HP percentage. 0 = 0%, 1 = 100%"));
-            specialExecuteBosses = base.Config.Bind<bool>(new ConfigDefinition("40 - Special Settings", "Special Execute Bosses*"), false, new ConfigDescription("Allow bosses to be executed by Bandit's Specials if Execute is enabled."));
+            specialExecuteThreshold = base.Config.Bind<float>(new ConfigDefinition("40 - Special Settings", "Special Execute Threshold*"), 0.15f, new ConfigDescription("Bandit's Specials instakill enemies that fall below this HP percentage. 0 = 0%, 1 = 100%"));
+            specialExecuteBosses = base.Config.Bind<bool>(new ConfigDefinition("40 - Special Settings", "Special Execute Bosses*"), true, new ConfigDescription("Allow bosses to be executed by Bandit's Specials if Execute is enabled."));
 
             loDamage = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Lights Out", "Damage"), 6f, new ConfigDescription("How much damage Lights Out deals."));
             loForce = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Lights Out", "Force"), 2400f, new ConfigDescription("Push force per shot."));
@@ -621,7 +575,7 @@ namespace BanditReloaded
             loCooldown = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Lights Out", "Cooldown"), 7f, new ConfigDescription("How long Lights Out takes to recharge."));
             loStock = base.Config.Bind<int>(new ConfigDefinition("41 - Special - Lights Out", "Stock"), 1, new ConfigDescription("How many charges Lights Out has."));
             loGracePeriodMin = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Lights Out", "Cooldown Reset Grace Period Min*"), 0.5f, new ConfigDescription("Minimum duration for Lights Out's cooldown reset window."));
-            loGracePeriodMax = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Lights Out", "Cooldown Reset Grace Period Max*"), 3.6f, new ConfigDescription("Maximum duration forLights Out's cooldown reset window."));
+            loGracePeriodMax = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Lights Out", "Cooldown Reset Grace Period Max*"), 0.5f, new ConfigDescription("Maximum duration forLights Out's cooldown reset window."));
 
             reuDamage = base.Config.Bind<float>(new ConfigDefinition("42 - Special - Rack em Up", "Damage"), 1f, new ConfigDescription("How much damage Rack em Up deals."));
             reuBullets = base.Config.Bind<int>(new ConfigDefinition("42 - Special - Rack em Up", "Total Shots"), 6, new ConfigDescription("How many shots are fired."));
@@ -633,8 +587,8 @@ namespace BanditReloaded
             reuRange = base.Config.Bind<float>(new ConfigDefinition("42 - Special - Rack em Up", "Range"), 120f, new ConfigDescription("How far shots reach."));
             reuCooldown = base.Config.Bind<float>(new ConfigDefinition("42 - Special - Rack em Up", "Cooldown"), 7f, new ConfigDescription("How long Rack em Up takes to recharge."));
             reuStock = base.Config.Bind<int>(new ConfigDefinition("42 - Special - Rack em Up", "Stock"), 1, new ConfigDescription("How many charges Rack em Up has."));
-            reuGracePeriodMin = base.Config.Bind<float>(new ConfigDefinition("42 - Special - Rack em Up", "Cooldown Reset Grace Period Min*"), 0.8f, new ConfigDescription("Minimum duration for Rack em Up's cooldown reset window."));
-            reuGracePeriodMax = base.Config.Bind<float>(new ConfigDefinition("42 - Special - Rack em Up", "Cooldown Reset Grace Period Max*"), 1.6f, new ConfigDescription("Maximum duration for Rack em Up's Special cooldown reset window."));
+            reuGracePeriodMin = base.Config.Bind<float>(new ConfigDefinition("42 - Special - Rack em Up", "Cooldown Reset Grace Period Min*"), 0.5f, new ConfigDescription("Minimum duration for Rack em Up's cooldown reset window."));
+            reuGracePeriodMax = base.Config.Bind<float>(new ConfigDefinition("42 - Special - Rack em Up", "Cooldown Reset Grace Period Max*"), 0.5f, new ConfigDescription("Maximum duration for Rack em Up's Special cooldown reset window."));
 
 
             asMinDamage = base.Config.Bind<float>(new ConfigDefinition("99 -  Deprecated - Assassinate", "Minimum Damage"), 2.5f, new ConfigDescription("How much damage Assassinate deals at no charge."));
@@ -687,7 +641,6 @@ namespace BanditReloaded
             #region Blast
             primaryBlastDef = SkillDef.CreateInstance<SkillDef>();
             primaryBlastDef.activationState = new SerializableEntityStateType(typeof(Blast));
-            primaryBlastDef.isBullets = false;
             primaryBlastDef.baseRechargeInterval = blastRechargeInterval.Value;
             if (primaryBlastDef.baseRechargeInterval > 0f)
             {
@@ -713,11 +666,10 @@ namespace BanditReloaded
             primaryBlastDef.skillName = "FireSlug";
             primaryBlastDef.skillNameToken = "BANDITRELOADED_PRIMARY_NAME";
             primaryBlastDef.activationStateMachineName = "Weapon";
-            primaryBlastDef.shootDelay = 0;
             primaryBlastDef.beginSkillCooldownOnSkillEnd = false;
             primaryBlastDef.interruptPriority = EntityStates.InterruptPriority.Any;
             primaryBlastDef.isCombatSkill = true;
-            primaryBlastDef.noSprint = true;
+            primaryBlastDef.cancelSprintingOnActivation = true;
             primaryBlastDef.canceledFromSprinting = false;
             primaryBlastDef.mustKeyPress = false;
             primaryBlastDef.icon = iconSkill1;
@@ -725,13 +677,12 @@ namespace BanditReloaded
             primaryBlastDef.requiredStock = 1;
             primaryBlastDef.stockToConsume = 1;
 
-            LoadoutAPI.AddSkillDef(primaryBlastDef);
+            ModContentPack.skillDefs.Add(primaryBlastDef);
             #endregion
 
             #region scatter
             primaryScatterDef = SkillDef.CreateInstance<SkillDef>();
             primaryScatterDef.activationState = new SerializableEntityStateType(typeof(Scatter));
-            primaryScatterDef.isBullets = false;
             primaryScatterDef.baseRechargeInterval = scatterRechargeInterval.Value;
             if (primaryScatterDef.baseRechargeInterval > 0f)
             {
@@ -757,18 +708,17 @@ namespace BanditReloaded
             }
             primaryScatterDef.skillDescriptionToken += Environment.NewLine;
             primaryScatterDef.activationStateMachineName = "Weapon";
-            primaryScatterDef.shootDelay = 0;
             primaryScatterDef.beginSkillCooldownOnSkillEnd = false;
             primaryScatterDef.interruptPriority = EntityStates.InterruptPriority.Any;
             primaryScatterDef.isCombatSkill = true;
-            primaryScatterDef.noSprint = true;
+            primaryScatterDef.cancelSprintingOnActivation = true;
             primaryScatterDef.canceledFromSprinting = false;
             primaryScatterDef.mustKeyPress = false;
             primaryScatterDef.icon = iconSkill1a;
             primaryScatterDef.requiredStock = 1;
             primaryScatterDef.stockToConsume = 1;
 
-            LoadoutAPI.AddSkillDef(primaryScatterDef);
+            ModContentPack.skillDefs.Add(primaryScatterDef);
             #endregion
 
             #region CastSmokescreen
@@ -777,54 +727,25 @@ namespace BanditReloaded
             utilityDefA.baseRechargeInterval = cloakCooldown.Value;
             utilityDefA.skillName = "CloakBanditReloaded";
             utilityDefA.skillNameToken = "BANDITRELOADED_UTILITY_NAME";
-            utilityDefA.skillDescriptionToken = "<style=cIsUtility>Turn invisible</style>. After " + CastSmokescreenNoDelay.duration.ToString("N1")
-                + " seconds, <style=cIsDamage>stun enemies for " + CastSmokescreenNoDelay.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>,"
-                + " and your next attack gains <style=cIsDamage>+30%</style> TOTAL damage.";
+            utilityDefA.skillDescriptionToken = "<style=cIsDamage>Stunning</style>. Deal <style=cIsDamage>" + CastSmokescreenNoDelay.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>, become"
+                   + " <style=cIsUtility>invisible</style>, then deal <style=cIsDamage>" + CastSmokescreenNoDelay.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style> again.";
+            utilityDefA.skillDescriptionToken += " Your next attack gains <style=cIsDamage>+50% TOTAL damage</style>.";
             utilityDefA.skillDescriptionToken += Environment.NewLine;
             utilityDefA.baseMaxStock = cloakStock.Value;
             utilityDefA.rechargeStock = 1;
-            utilityDefA.isBullets = false;
-            utilityDefA.shootDelay = 0f;
             utilityDefA.beginSkillCooldownOnSkillEnd = true;
             utilityDefA.activationStateMachineName = "Weapon";
             utilityDefA.interruptPriority = EntityStates.InterruptPriority.Skill;
             utilityDefA.isCombatSkill = false;
-            utilityDefA.noSprint = false;
+            utilityDefA.cancelSprintingOnActivation = false;
             utilityDefA.canceledFromSprinting = false;
             utilityDefA.mustKeyPress = false;
             utilityDefA.icon = iconSkill3;
             utilityDefA.requiredStock = 1;
             utilityDefA.stockToConsume = 1;
-            utilityDefA.forceSprintDuringState = false;
-            utilityDefA.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_INVIS", "KEYWORD_STUNNING" };
-            LoadoutAPI.AddSkillDef(utilityDefA);
-
-            utilityDefB = SkillDef.CreateInstance<SkillDef>();
-            utilityDefB.activationState = new SerializableEntityStateType(typeof(CastSmokescreen));
-            utilityDefB.baseRechargeInterval = cloakCooldown.Value;
-            utilityDefB.skillName = "CloakAnimBanditReloaded";
-            utilityDefB.skillNameToken = "BANDITRELOADED_UTILITY_NAME";
-            utilityDefB.skillDescriptionToken = "<style=cIsUtility>Turn invisible</style>. After " + (CastSmokescreen.stealthDuration - 0.8f).ToString("N1")
-                + " seconds, <style=cIsDamage>stun enemies for " + CastSmokescreen.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>,"
-                + " and your next attack gains <style=cIsDamage>+30% TOTAL damage</style>.";
-            utilityDefB.skillDescriptionToken += Environment.NewLine;
-            utilityDefB.baseMaxStock = cloakStock.Value;
-            utilityDefB.rechargeStock = 1;
-            utilityDefB.isBullets = false;
-            utilityDefB.shootDelay = 0f;
-            utilityDefB.beginSkillCooldownOnSkillEnd = true;
-            utilityDefB.activationStateMachineName = "Weapon";
-            utilityDefB.interruptPriority = EntityStates.InterruptPriority.Skill;
-            utilityDefB.isCombatSkill = false;
-            utilityDefB.noSprint = false;
-            utilityDefB.canceledFromSprinting = false;
-            utilityDefB.mustKeyPress = false;
-            utilityDefB.icon = iconSkill3;
-            utilityDefB.requiredStock = 1;
-            utilityDefB.stockToConsume = 1;
-            utilityDefB.forceSprintDuringState = false;
-            utilityDefB.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_INVIS", "KEYWORD_STUNNING" };
-            LoadoutAPI.AddSkillDef(utilityDefB);
+            utilityDefA.forceSprintDuringState = true;
+            utilityDefA.keywordTokens = new string[] { "KEYWORD_STUNNING" };
+            ModContentPack.skillDefs.Add(utilityDefA);
             #endregion
 
             #region Assassinate
@@ -843,19 +764,17 @@ namespace BanditReloaded
             utilityAltDef.skillDescriptionToken += Environment.NewLine;
             utilityAltDef.baseMaxStock = asStock.Value;
             utilityAltDef.rechargeStock = 1;
-            utilityAltDef.isBullets = false;
-            utilityAltDef.shootDelay = 0f;
             utilityAltDef.beginSkillCooldownOnSkillEnd = true;
             utilityAltDef.activationStateMachineName = "Weapon";
             utilityAltDef.interruptPriority = EntityStates.InterruptPriority.Skill;//should be .Skill if utility
             utilityAltDef.isCombatSkill = true;
-            utilityAltDef.noSprint = true;
+            utilityAltDef.cancelSprintingOnActivation = true;
             utilityAltDef.canceledFromSprinting = false;
             utilityAltDef.mustKeyPress = false;
             utilityAltDef.icon = iconSkill3a;
             utilityAltDef.requiredStock = 1;
             utilityAltDef.stockToConsume = 1;
-            LoadoutAPI.AddSkillDef(utilityAltDef);
+            ModContentPack.skillDefs.Add(utilityAltDef);
             #endregion
 
             #region LightsOut
@@ -874,19 +793,16 @@ namespace BanditReloaded
                 kwlLO.Add("KEYWORD_BANDITRELOADED_DEBUFFBOOST");
                 specialLightsOutDef.skillDescriptionToken += "<style=cIsDamage>Debuff Boosted</style>. ";
             }
-            kwlLO.Add("KEYWORD_BANDITRELOADED_RESET");
             specialLightsOutDef.keywordTokens = kwlLO.ToArray();
 
-            specialLightsOutDef.skillDescriptionToken += "Take aim with your Persuader, <style=cIsDamage>dealing " + FireLightsOut.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>.";
-            specialLightsOutDef.skillDescriptionToken += " <style=cIsUtility>Resets skill cooldowns on kill</style>.";
+            specialLightsOutDef.skillDescriptionToken += "Fire a persuader shot for <style=cIsDamage>" + FireLightsOut.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>.";
+            specialLightsOutDef.skillDescriptionToken += " Kills <style=cIsUtility>reset all your cooldowns</style>.";
             specialLightsOutDef.skillDescriptionToken += Environment.NewLine;
             specialLightsOutDef.baseRechargeInterval = loCooldown.Value;
             specialLightsOutDef.skillNameToken = "BANDITRELOADED_SPECIAL_NAME";
             specialLightsOutDef.skillName = "LightsOut";
             specialLightsOutDef.baseMaxStock = loStock.Value;
             specialLightsOutDef.rechargeStock = 1;
-            specialLightsOutDef.isBullets = false;
-            specialLightsOutDef.shootDelay = 0f;
 
             specialLightsOutDef.activationStateMachineName = "Weapon";
             specialLightsOutDef.icon = iconSkill4;
@@ -894,11 +810,11 @@ namespace BanditReloaded
             specialLightsOutDef.beginSkillCooldownOnSkillEnd = true;
             specialLightsOutDef.isCombatSkill = true;
             specialLightsOutDef.canceledFromSprinting = false;
-            specialLightsOutDef.noSprint = true;
+            specialLightsOutDef.cancelSprintingOnActivation = true;
             specialLightsOutDef.mustKeyPress = false;
             specialLightsOutDef.requiredStock = 1;
             specialLightsOutDef.stockToConsume = 1;
-            LoadoutAPI.AddSkillDef(specialLightsOutDef);
+            ModContentPack.skillDefs.Add(specialLightsOutDef);
             #endregion
 
             #region Thermite Bomb
@@ -911,21 +827,19 @@ namespace BanditReloaded
             thermiteDef.skillDescriptionToken += Environment.NewLine;
             thermiteDef.skillName = "Thermite";
             thermiteDef.icon = iconSkill2;
-            thermiteDef.shootDelay = 0f;
             thermiteDef.baseMaxStock = thermiteStock.Value;
             thermiteDef.rechargeStock = 1;
-            thermiteDef.isBullets = false;
             thermiteDef.beginSkillCooldownOnSkillEnd = false;
             thermiteDef.activationStateMachineName = "Weapon";
             thermiteDef.interruptPriority = EntityStates.InterruptPriority.Skill;
             thermiteDef.isCombatSkill = true;
-            thermiteDef.noSprint = false;
+            thermiteDef.cancelSprintingOnActivation = false;
             thermiteDef.canceledFromSprinting = false;
             thermiteDef.mustKeyPress = false;
             thermiteDef.requiredStock = 1;
             thermiteDef.stockToConsume = 1;
             thermiteDef.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_THERMITE" };
-            LoadoutAPI.AddSkillDef(thermiteDef);
+            ModContentPack.skillDefs.Add(thermiteDef);
             #endregion
 
             #region Acid Bomb
@@ -939,21 +853,19 @@ namespace BanditReloaded
             acidBombDef.skillDescriptionToken += Environment.NewLine;
             acidBombDef.skillName = "AcidGrenade";
             acidBombDef.icon = iconSkill2a;
-            acidBombDef.shootDelay = 0f;
             acidBombDef.baseMaxStock = acidStock.Value;
             acidBombDef.rechargeStock = 1;
-            acidBombDef.isBullets = false;
             acidBombDef.beginSkillCooldownOnSkillEnd = false;
             acidBombDef.activationStateMachineName = "Weapon";
             acidBombDef.interruptPriority = EntityStates.InterruptPriority.Skill;
             acidBombDef.isCombatSkill = true;
-            acidBombDef.noSprint = false;
+            acidBombDef.cancelSprintingOnActivation = false;
             acidBombDef.canceledFromSprinting = false;
             acidBombDef.mustKeyPress = false;
             acidBombDef.requiredStock = 1;
             acidBombDef.stockToConsume = 1;
             acidBombDef.keywordTokens = new string[] { "KEYWORD_WEAK" };
-            LoadoutAPI.AddSkillDef(acidBombDef);
+            ModContentPack.skillDefs.Add(acidBombDef);
             #endregion
             
             #region Cluster Bomb
@@ -967,96 +879,94 @@ namespace BanditReloaded
             clusterBombDef.skillDescriptionToken += Environment.NewLine;
             clusterBombDef.skillName = "Dynamite";
             clusterBombDef.icon = iconClusterBomb;
-            clusterBombDef.shootDelay = 0f;
             clusterBombDef.baseMaxStock = cbStock.Value;
             clusterBombDef.rechargeStock = 1;
-            clusterBombDef.isBullets = false;
             clusterBombDef.beginSkillCooldownOnSkillEnd = false;
             clusterBombDef.activationStateMachineName = "Weapon";
             clusterBombDef.interruptPriority = EntityStates.InterruptPriority.Skill;
             clusterBombDef.isCombatSkill = true;
-            clusterBombDef.noSprint = false;
+            clusterBombDef.cancelSprintingOnActivation = false;
             clusterBombDef.canceledFromSprinting = false;
             clusterBombDef.mustKeyPress = false;
             clusterBombDef.requiredStock = 1;
             clusterBombDef.stockToConsume = 1;
             clusterBombDef.keywordTokens = new string[] {};
-            LoadoutAPI.AddSkillDef(clusterBombDef);
+            ModContentPack.skillDefs.Add(clusterBombDef);
             #endregion
             
             #region barrage
             specialBarrageDef = SkillDef.CreateInstance<SkillDef>();
             specialBarrageDef.activationState = new SerializableEntityStateType(typeof(PrepBarrage));
+            specialBarrageDef.skillDescriptionToken = "";
             List<string> kwlBarrage = new List<string>();
             if (specialExecuteThreshold.Value > 0f)
             {
                 kwlBarrage.Add("KEYWORD_BANDITRELOADED_EXECUTE");
+                specialBarrageDef.skillDescriptionToken += "<style=cIsDamage>Executing</style>. ";
             }
             if (specialDebuffBonus.Value > 0f)
             {
                 kwlBarrage.Add("KEYWORD_BANDITRELOADED_DEBUFFBOOST");
+                specialBarrageDef.skillDescriptionToken += "<style=cIsDamage>Debuff Boosted</style>. ";
             }
-            kwlBarrage.Add("KEYWORD_BANDITRELOADED_RESET");
             specialBarrageDef.keywordTokens = kwlBarrage.ToArray();
 
             float barrageBonusDamage = FireBarrage.damageCoefficient * specialDebuffBonus.Value;
-            specialBarrageDef.skillDescriptionToken += "<style=cIsDamage>Debuff Boosted</style>. Rapidly fire bullets, dealing <style=cIsDamage>" + FireBarrage.maxBullets + "x" + FireBarrage.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>.";
-            specialBarrageDef.skillDescriptionToken += " Consecutive hits deal <style=cIsDamage>+" + barrageBonusDamage.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style> each.";
-            specialBarrageDef.skillDescriptionToken += " <style=cIsUtility>Resets skill cooldowns on kill</style>.";
+            specialBarrageDef.skillDescriptionToken += "Rapidly fire shots for <style=cIsDamage>" + FireBarrage.maxBullets + "x" + FireBarrage.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>.";
+            specialBarrageDef.skillDescriptionToken += " Repeated hits deal <style=cIsDamage>+" + barrageBonusDamage.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style> each.";
+            specialBarrageDef.skillDescriptionToken += " Kills <style=cIsUtility>reset all your cooldowns</style>.";
             specialBarrageDef.skillDescriptionToken += Environment.NewLine;
             specialBarrageDef.baseRechargeInterval = reuCooldown.Value;
             specialBarrageDef.skillNameToken = "BANDITRELOADED_SPECIAL_ALT_NAME";
             specialBarrageDef.skillName = "BanditBarrage";
             specialBarrageDef.baseMaxStock = reuStock.Value;
             specialBarrageDef.rechargeStock = 1;
-            specialBarrageDef.isBullets = false;
-            specialBarrageDef.shootDelay = 0f;
             specialBarrageDef.activationStateMachineName = "Weapon";
             specialBarrageDef.icon = iconSkill3a;
             specialBarrageDef.interruptPriority = EntityStates.InterruptPriority.PrioritySkill;
             specialBarrageDef.beginSkillCooldownOnSkillEnd = true;
             specialBarrageDef.isCombatSkill = true;
             specialBarrageDef.canceledFromSprinting = false;
-            specialBarrageDef.noSprint = true;
+            specialBarrageDef.cancelSprintingOnActivation = true;
             specialBarrageDef.mustKeyPress = false;
             specialBarrageDef.requiredStock = 1;
             specialBarrageDef.stockToConsume = 1;
-            LoadoutAPI.AddSkillDef(specialBarrageDef);
+            ModContentPack.skillDefs.Add(specialBarrageDef);
 
             specialBarrageScepterDef = SkillDef.CreateInstance<SkillDef>();
             specialBarrageScepterDef.activationState = new SerializableEntityStateType(typeof(PrepBarrageScepter));
+
+            specialBarrageScepterDef.skillDescriptionToken = "";
             if (specialExecuteThreshold.Value > 0f)
             {
-                specialBarrageScepterDef.skillDescriptionToken = " <style=cIsDamage>Executing</style>. ";
-                specialBarrageScepterDef.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_EXECUTE", "KEYWORD_BANDITRELOADED_DEBUFFBOOST2", "KEYWORD_BANDITRELOADED_RESET" };
+                specialBarrageScepterDef.skillDescriptionToken += "<style=cIsDamage>Executing</style>. ";
             }
-            else
+            if (specialDebuffBonus.Value > 0f)
             {
-                specialBarrageScepterDef.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_DEBUFFBOOST", "KEYWORD_BANDITRELOADED_RESET" };
+                specialBarrageScepterDef.skillDescriptionToken += "<style=cIsDamage>Debuff Boosted</style>. ";
             }
+            specialBarrageDef.keywordTokens = kwlBarrage.ToArray();
             float barrageScepterBonusDamage = FireBarrageScepter.damageCoefficient * specialDebuffBonus.Value;
-            specialBarrageScepterDef.skillDescriptionToken += "<style=cIsDamage>Debuff Boosted</style>. Rapidly fire bullets, dealing <style=cIsDamage>" + FireBarrageScepter.maxBullets + "x" + FireBarrageScepter.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>.";
-            specialBarrageScepterDef.skillDescriptionToken += " Consecutive hits deal <style=cIsDamage>+" + barrageScepterBonusDamage.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style> each.";
-            specialBarrageScepterDef.skillDescriptionToken += " <style=cIsUtility>Resets skill cooldowns on kill</style>.";
+            specialBarrageScepterDef.skillDescriptionToken += "Rapidly fire shots for <style=cIsDamage>" + FireBarrageScepter.maxBullets + "x" + FireBarrageScepter.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>.";
+            specialBarrageScepterDef.skillDescriptionToken += " Repeated hits deal <style=cIsDamage>+" + barrageScepterBonusDamage.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style> each.";
+            specialBarrageScepterDef.skillDescriptionToken += " Kills <style=cIsUtility>reset all your cooldowns</style>.";
             specialBarrageScepterDef.skillDescriptionToken += Environment.NewLine;
             specialBarrageScepterDef.baseRechargeInterval = reuCooldown.Value;
             specialBarrageScepterDef.skillNameToken = "BANDITRELOADED_SPECIAL_ALT_SCEPTER_NAME";
             specialBarrageScepterDef.skillName = "BanditBarrageScepter";
             specialBarrageScepterDef.baseMaxStock = reuStock.Value;
             specialBarrageScepterDef.rechargeStock = 1;
-            specialBarrageScepterDef.isBullets = false;
-            specialBarrageScepterDef.shootDelay = 0f;
             specialBarrageScepterDef.activationStateMachineName = "Weapon";
             specialBarrageScepterDef.icon = iconREUScepter;
             specialBarrageScepterDef.interruptPriority = EntityStates.InterruptPriority.PrioritySkill;
             specialBarrageScepterDef.beginSkillCooldownOnSkillEnd = true;
             specialBarrageScepterDef.isCombatSkill = true;
             specialBarrageScepterDef.canceledFromSprinting = false;
-            specialBarrageScepterDef.noSprint = true;
+            specialBarrageScepterDef.cancelSprintingOnActivation = true;
             specialBarrageScepterDef.mustKeyPress = false;
             specialBarrageScepterDef.requiredStock = 1;
             specialBarrageScepterDef.stockToConsume = 1;
-            LoadoutAPI.AddSkillDef(specialBarrageScepterDef);
+            ModContentPack.skillDefs.Add(specialBarrageScepterDef);
 
             specialLightsOutScepterDef = SkillDef.CreateInstance<SkillDef>();
             specialLightsOutScepterDef.activationState = new SerializableEntityStateType(typeof(PrepLightsOutScepter));
@@ -1065,14 +975,15 @@ namespace BanditReloaded
             if (specialExecuteThreshold.Value > 0f)
             {
                 specialLightsOutScepterDef.skillDescriptionToken += "<style=cIsDamage>Executing</style>. ";
-                specialLightsOutScepterDef.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_EXECUTE", "KEYWORD_BANDITRELOADED_DEBUFFBOOST", "KEYWORD_BANDITRELOADED_RESET" };
             }
-            else
+            if (specialDebuffBonus.Value > 0f)
             {
-                specialLightsOutScepterDef.keywordTokens = new string[] { "KEYWORD_BANDITRELOADED_DEBUFFBOOST", "KEYWORD_BANDITRELOADED_RESET" };
+                specialLightsOutScepterDef.skillDescriptionToken += "<style=cIsDamage>Debuff Boosted</style>. ";
             }
-            specialLightsOutScepterDef.skillDescriptionToken += "<style=cIsDamage>Debuff Boosted</style>. Take aim with your Persuader, <style=cIsDamage>dealing " + FireLightsOutScepter.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>.";
-            specialLightsOutScepterDef.skillDescriptionToken += " <style=cIsUtility>Resets skill cooldowns on kill</style>.";
+            specialLightsOutScepterDef.keywordTokens = kwlBarrage.ToArray();
+
+            specialLightsOutScepterDef.skillDescriptionToken += "Fire a persuader shot for <style=cIsDamage>" + FireLightsOutScepter.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>.";
+            specialLightsOutScepterDef.skillDescriptionToken += " Kills <style=cIsUtility>reset all your cooldowns</style>.";
 
             specialLightsOutScepterDef.skillDescriptionToken += Environment.NewLine;
             specialLightsOutScepterDef.baseRechargeInterval = loCooldown.Value;
@@ -1080,19 +991,17 @@ namespace BanditReloaded
             specialLightsOutScepterDef.skillName = "LightsOutScepter";
             specialLightsOutScepterDef.baseMaxStock = loStock.Value;
             specialLightsOutScepterDef.rechargeStock = 1;
-            specialLightsOutScepterDef.isBullets = false;
-            specialLightsOutScepterDef.shootDelay = 0f;
             specialLightsOutScepterDef.activationStateMachineName = "Weapon";
             specialLightsOutScepterDef.icon = iconLOScepter;
             specialLightsOutScepterDef.interruptPriority = EntityStates.InterruptPriority.PrioritySkill;
             specialLightsOutScepterDef.beginSkillCooldownOnSkillEnd = true;
             specialLightsOutScepterDef.isCombatSkill = true;
             specialLightsOutScepterDef.canceledFromSprinting = false;
-            specialLightsOutScepterDef.noSprint = true;
+            specialLightsOutScepterDef.cancelSprintingOnActivation = true;
             specialLightsOutScepterDef.mustKeyPress = false;
             specialLightsOutScepterDef.requiredStock = 1;
             specialLightsOutScepterDef.stockToConsume = 1;
-            LoadoutAPI.AddSkillDef(specialLightsOutScepterDef);
+            ModContentPack.skillDefs.Add(specialLightsOutScepterDef);
             #endregion
 
 
@@ -1131,22 +1040,11 @@ namespace BanditReloaded
                 viewableNode = new ViewablesCatalog.Node(acidBombDef.skillNameToken, false)
             };
 
-
-            SkillDef toInsert;
-            if (cloakAnim.Value)
-            {
-                toInsert = utilityDefB;
-            }
-            else
-            {
-                toInsert = utilityDefA;
-            }
-
             utilitySkillFamily.variants[0] = new SkillFamily.Variant
             {
-                skillDef = toInsert,
+                skillDef = utilityDefA,
                 unlockableName = "",
-                viewableNode = new ViewablesCatalog.Node(toInsert.skillNameToken, false)
+                viewableNode = new ViewablesCatalog.Node(utilityDefA.skillNameToken, false)
             };
             if (asEnabled.Value)
             {
@@ -1174,12 +1072,12 @@ namespace BanditReloaded
                 viewableNode = new ViewablesCatalog.Node(specialBarrageDef.skillNameToken, false)
             };
 
-            LoadoutAPI.AddSkillFamily(primarySkillFamily);
-            LoadoutAPI.AddSkillFamily(secondarySkillFamily);
-            LoadoutAPI.AddSkillFamily(utilitySkillFamily);
-            LoadoutAPI.AddSkillFamily(specialSkillFamily);
+            ModContentPack.skillFamilies.Add(primarySkillFamily);
+            ModContentPack.skillFamilies.Add(secondarySkillFamily);
+            ModContentPack.skillFamilies.Add(utilitySkillFamily);
+            ModContentPack.skillFamilies.Add(specialSkillFamily);
 
-            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.ThinkInvisible.ClassicItems"))
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.DestroyedClone.AncientScepter"))
             {
                SetupScepter();
             }
@@ -1189,17 +1087,11 @@ namespace BanditReloaded
         {
             AcidBombObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/banditgrenadeprojectile"), "BanditReloadedAcidBomb", true);
             AcidBombGhostObject = PrefabAPI.InstantiateClone(AcidBombObject.GetComponent<ProjectileController>().ghostPrefab, "BanditReloadedAcidBombGhost", false);
-            ProjectileCatalog.getAdditionalEntries += delegate (List<GameObject> list)
-            {
-                list.Add(AcidBombObject);
-            };
+            ModContentPack.projectilePrefabs.Add(AcidBombObject);
             AcidBombObject.GetComponent<ProjectileController>().ghostPrefab = AcidBombGhostObject;
 
             GameObject puddleObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/crocoleapacid"), "BanditReloadedAcidBombPuddle", true);
-            ProjectileCatalog.getAdditionalEntries += delegate (List<GameObject> list)
-            {
-                list.Add(puddleObject);
-            };
+            ModContentPack.projectilePrefabs.Add(puddleObject);
             ProjectileDamage puddleDamage = puddleObject.GetComponent<ProjectileDamage>();
             puddleDamage.damageType = DamageType.WeakOnHit;
             ProjectileDotZone pdz = puddleObject.GetComponent<ProjectileDotZone>();
@@ -1213,7 +1105,7 @@ namespace BanditReloaded
             //ec.applyScale = true;
             //ec.disregardZScale = false;
             ec.soundName = "Play_acrid_shift_land";
-            EffectAPI.AddEffect(abImpact);
+            ModContentPack.effectDefs.Add(new EffectDef(abImpact));
 
             AcidBombObject.GetComponent<ProjectileSimple>().velocity = 60f;
             ProjectileImpactExplosion abPIE = AcidBombObject.GetComponent<ProjectileImpactExplosion>();
@@ -1240,10 +1132,7 @@ namespace BanditReloaded
         {
             ThermiteObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/thermite"), "BanditReloadedThermite", true);
             ThermiteGhostObject = PrefabAPI.InstantiateClone(ThermiteObject.GetComponent<ProjectileController>().ghostPrefab, "BanditReloadedThermiteGhost", false);
-            ProjectileCatalog.getAdditionalEntries += delegate (List<GameObject> list)
-            {
-                list.Add(ThermiteObject);
-            };
+            ModContentPack.projectilePrefabs.Add(ThermiteObject);
             ThermiteObject.GetComponent<ProjectileController>().ghostPrefab = ThermiteGhostObject;
 
             ProjectileImpactExplosion tPIE = ThermiteObject.GetComponent<ProjectileImpactExplosion>();
@@ -1291,17 +1180,14 @@ namespace BanditReloaded
 
             GameObject thermiteBurnEffect = Resources.Load<GameObject>("prefabs/effects/impacteffects/missileexplosionvfx").InstantiateClone("BanditReloadedThermiteBurnEffect", false);
             thermiteBurnEffect.GetComponent<EffectComponent>().soundName = "Play_BanditReloaded_burn";
-            EffectAPI.AddEffect(thermiteBurnEffect);
+            ModContentPack.effectDefs.Add(new EffectDef(thermiteBurnEffect));
             BootlegThermiteOverlapAttack.burnEffectPrefab = thermiteBurnEffect;
         }
 
         private void SetupClusterBomb()
         {
             ClusterBombObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/BanditClusterBombSeed"), "BanditReloadedClusterBomb", true);
-            ProjectileCatalog.getAdditionalEntries += delegate (List<GameObject> list)
-            {
-                list.Add(ClusterBombObject);
-            };
+            ModContentPack.projectilePrefabs.Add(ClusterBombObject);
 
             ClusterBombGhostObject = Resources.Load<GameObject>(assetPrefix + ":DynamiteBundle.prefab").InstantiateClone("BanditReloadedClusterBombGhost", true);
             ClusterBombGhostObject.GetComponentInChildren<MeshRenderer>().material.shader = hotpoo;
@@ -1435,17 +1321,14 @@ namespace BanditReloaded
             EffectComponent ec = dynamiteExplosion.GetComponent<EffectComponent>();
             ec.soundName = "Play_BanditReloaded_dynamite";
 
-            EffectAPI.AddEffect(dynamiteExplosion);
+            ModContentPack.effectDefs.Add(new EffectDef(dynamiteExplosion));
             return dynamiteExplosion;
         }
 
         private void SetupClusterBomblet()
         {
             ClusterBombletObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/BanditClusterGrenadeProjectile"), "BanditReloadedClusterBomblet", true);
-            ProjectileCatalog.getAdditionalEntries += delegate (List<GameObject> list)
-            {
-                list.Add(ClusterBombletObject);
-            };
+            ModContentPack.projectilePrefabs.Add(ClusterBombletObject);
 
             ClusterBombletGhostObject = Resources.Load<GameObject>(assetPrefix + ":DynamiteStick.prefab").InstantiateClone("BanditReloadedClusterBombletGhost", true);
             ClusterBombletGhostObject.GetComponentInChildren<MeshRenderer>().material.shader = hotpoo;
@@ -1483,7 +1366,7 @@ namespace BanditReloaded
             EffectComponent ec = dynamiteExplosion.GetComponent<EffectComponent>();
             ec.soundName = "Play_engi_M2_explo";
 
-            EffectAPI.AddEffect(dynamiteExplosion);
+            ModContentPack.effectDefs.Add(new EffectDef(dynamiteExplosion));
             return dynamiteExplosion;
         }
 
@@ -1512,15 +1395,9 @@ namespace BanditReloaded
                     Blast.attackSoundString = "Play_BanditReloaded_blast";
                     break;
                 default:
-                    Blast.attackSoundString = "play_bandit_m1_shot";
+                    Blast.attackSoundString = "Play_bandit2_m1_rifle";
                     break;
             }
-
-            CastSmokescreen.stealthDuration = cloakDuration.Value + 0.8f;
-            CastSmokescreen.damageCoefficient = cloakDamage.Value;
-            CastSmokescreen.radius = cloakRadius.Value;
-            CastSmokescreen.procCoefficient = cloakProcCoefficient.Value;
-            CastSmokescreen.nonLethal = cloakNonLethal.Value;
 
             CastSmokescreenNoDelay.duration = cloakDuration.Value;
             CastSmokescreenNoDelay.damageCoefficient = cloakDamage.Value;
@@ -1597,31 +1474,33 @@ namespace BanditReloaded
             FireLightsOutScepter.force = loForce.Value;
             FireLightsOutScepter.baseDuration = loEndLag.Value;
 
-            LoadoutAPI.AddSkill(typeof(Blast));
-            LoadoutAPI.AddSkill(typeof(CastSmokescreenNoDelay));
-            LoadoutAPI.AddSkill(typeof(CastSmokescreen));
-            LoadoutAPI.AddSkill(typeof(Assassinate));
-            LoadoutAPI.AddSkill(typeof(FireChargeShot));
-            LoadoutAPI.AddSkill(typeof(PrepLightsOut));
-            LoadoutAPI.AddSkill(typeof(FireLightsOut));
-            LoadoutAPI.AddSkill(typeof(AcidBomb));
-            LoadoutAPI.AddSkill(typeof(PrepFlare));
-            LoadoutAPI.AddSkill(typeof(ThermiteBomb));
-            LoadoutAPI.AddSkill(typeof(Scatter));
-            LoadoutAPI.AddSkill(typeof(ClusterBomb));
-            LoadoutAPI.AddSkill(typeof(PrepBarrage));
-            LoadoutAPI.AddSkill(typeof(FireBarrage));
-            LoadoutAPI.AddSkill(typeof(FireBarrageScepter));
-            LoadoutAPI.AddSkill(typeof(FireLightsOutScepter));
-            LoadoutAPI.AddSkill(typeof(PrepBarrageScepter));
-            LoadoutAPI.AddSkill(typeof(PrepLightsOutScepter));
+            ModContentPack.entityStates.Add(typeof(Blast));
+            ModContentPack.entityStates.Add(typeof(CastSmokescreenNoDelay));
+            ModContentPack.entityStates.Add(typeof(Assassinate));
+            ModContentPack.entityStates.Add(typeof(FireChargeShot));
+            ModContentPack.entityStates.Add(typeof(PrepLightsOut));
+            ModContentPack.entityStates.Add(typeof(FireLightsOut));
+            ModContentPack.entityStates.Add(typeof(AcidBomb));
+            ModContentPack.entityStates.Add(typeof(PrepFlare));
+            ModContentPack.entityStates.Add(typeof(ThermiteBomb));
+            ModContentPack.entityStates.Add(typeof(Scatter));
+            ModContentPack.entityStates.Add(typeof(ClusterBomb));
+            ModContentPack.entityStates.Add(typeof(PrepBarrage));
+            ModContentPack.entityStates.Add(typeof(FireBarrage));
+            ModContentPack.entityStates.Add(typeof(FireBarrageScepter));
+            ModContentPack.entityStates.Add(typeof(FireLightsOutScepter));
+            ModContentPack.entityStates.Add(typeof(PrepBarrageScepter));
+            ModContentPack.entityStates.Add(typeof(PrepLightsOutScepter));
+            ModContentPack.entityStates.Add(typeof(ExitRevolver));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private void SetupScepter()
         {
-            ThinkInvisible.ClassicItems.Scepter_V2.instance.RegisterScepterSkill(specialLightsOutScepterDef, BanditBodyName, SkillSlot.Special, 0);
-            ThinkInvisible.ClassicItems.Scepter_V2.instance.RegisterScepterSkill(specialBarrageScepterDef, BanditBodyName, SkillSlot.Special, 1);
+            AncientScepter.AncientScepterItem.instance.RegisterScepterSkill(specialLightsOutScepterDef, BanditBodyName, SkillSlot.Special, 0);
+            AncientScepter.AncientScepterItem.instance.RegisterScepterSkill(specialBarrageScepterDef, BanditBodyName, SkillSlot.Special, 1);
+            /*ThinkInvisible.ClassicItems.Scepter_V2.instance.RegisterScepterSkill(specialLightsOutScepterDef, BanditBodyName, SkillSlot.Special, 0);
+            ThinkInvisible.ClassicItems.Scepter_V2.instance.RegisterScepterSkill(specialBarrageScepterDef, BanditBodyName, SkillSlot.Special, 1);*/
         }
 
         private void LoadResources()
@@ -1662,6 +1541,7 @@ namespace BanditReloaded
             CharacterBody cb = BanditBody.GetComponent<CharacterBody>();
             cb.subtitleNameToken = "BANDITRELOADED_BODY_SUBTITLE";
             cb.baseNameToken = "BANDITRELOADED_BODY_NAME";
+            cb.bodyFlags = CharacterBody.BodyFlags.ImmuneToExecutes;
             cb.baseMaxHealth = 100f;
             cb.baseRegen = 1f;
             cb.baseMaxShield = 0f;
@@ -1697,10 +1577,7 @@ namespace BanditReloaded
         private void CreateMaster()
         {
             BanditMonsterMaster = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/charactermasters/commandomonstermaster"), "BanditReloadedMonsterMaster", true);
-            MasterCatalog.getAdditionalEntries += delegate (List<GameObject> list)
-            {
-                list.Add(BanditMonsterMaster);
-            };
+            ModContentPack.masterPrefabs.Add(BanditMonsterMaster);
 
             CharacterMaster cm = BanditMonsterMaster.GetComponent<CharacterMaster>();
             cm.bodyPrefab = BanditBody;
@@ -1936,116 +1813,35 @@ namespace BanditReloaded
 
         private void SetupBanditBody()
         {
-            BanditBody = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/characterbodies/banditbody"), "BanditReloadedBody", true);
-            BodyCatalog.getAdditionalEntries += delegate (List<GameObject> list)
-            {
-                list.Add(BanditBody);
-            };
+            BanditBody = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/characterbodies/bandit2body"), "BanditReloadedBody", true);
             BanditBodyName = BanditBody.name;
 
-            DisplaySetup.DisplayRules(BanditBody);
+            ModContentPack.bodyPrefabs.Add(BanditBody);
         }
 
         private void CreateLightsOutBuff()
         {
-            BuffDef LightsOutBuffDef = new BuffDef
-            {
-                buffColor = BanditColor,
-                buffIndex = BuffIndex.Count,
-                canStack = true,
-                eliteIndex = EliteIndex.None,
-                iconPath = "Textures/BuffIcons/texBuffFullCritIcon",
-                isDebuff = true,
-                name = "BanditReloadedMarkedForDeath"
-            };
-            BanditReloaded.lightsOutBuff = BuffAPI.Add(new CustomBuff(LightsOutBuffDef));
+            BuffDef LightsOutBuffDef = BuffDef.CreateInstance<BuffDef>();
+            LightsOutBuffDef.buffColor = BanditColor;
+            LightsOutBuffDef.canStack = true;
+            LightsOutBuffDef.iconSprite = Resources.Load<Sprite>("Textures/BuffIcons/texBuffFullCritIcon");
+            LightsOutBuffDef.name = "BanditReloadedMarkedForDeath";
+            ModContentPack.buffDefs.Add(LightsOutBuffDef);
 
-            BuffDef SlowBuffDef = new BuffDef
-            {
-                buffColor = BanditColor,
-                buffIndex = BuffIndex.Count,
-                canStack = true,
-                eliteIndex = EliteIndex.None,
-                iconPath = "Textures/BuffIcons/texBuffOnFireIcon",
-                isDebuff = true,
-                name = "BanditReloadedThermite"
-            };
-            BanditReloaded.thermiteBuff = BuffAPI.Add(new CustomBuff(SlowBuffDef));
+            BuffDef ThermiteBuffDef = BuffDef.CreateInstance<BuffDef>();
+            ThermiteBuffDef.buffColor = BanditColor;
+            ThermiteBuffDef.canStack = true;
+            ThermiteBuffDef.iconSprite = Resources.Load<Sprite>("Textures/BuffIcons/texBuffOnFireIcon");
+            ThermiteBuffDef.isDebuff = true;
+            ThermiteBuffDef.name = "BanditReloadedThermite";
+            ModContentPack.buffDefs.Add(ThermiteBuffDef);
 
-            BuffDef cloakDamageBuffDef = new BuffDef
-            {
-                buffColor = BanditColor,
-                buffIndex = BuffIndex.Count,
-                canStack = false,
-                eliteIndex = EliteIndex.None,
-                iconPath = "Textures/BuffIcons/texBuffFullCritIcon",
-                isDebuff = false,
-                name = "BanditReloadedCloakDamage"
-            };
-            BanditReloaded.cloakDamageBuff = BuffAPI.Add(new CustomBuff(cloakDamageBuffDef));
-        }
-
-        public static void AddSkin()    //credits to rob
-        {
-            GameObject bodyPrefab = BanditBody;
-            GameObject model = bodyPrefab.GetComponentInChildren<ModelLocator>().modelTransform.gameObject;
-            CharacterModel characterModel = model.GetComponent<CharacterModel>();
-
-            ModelSkinController skinController = null;
-            if (model.GetComponent<ModelSkinController>())
-                skinController = model.GetComponent<ModelSkinController>();
-            else
-                skinController = model.AddComponent<ModelSkinController>();
-
-            SkinnedMeshRenderer mainRenderer = Reflection.GetFieldValue<SkinnedMeshRenderer>(characterModel, "mainSkinnedMeshRenderer");
-            if (mainRenderer == null)
-            {
-                CharacterModel.RendererInfo[] bRI = Reflection.GetFieldValue<CharacterModel.RendererInfo[]>(characterModel, "baseRendererInfos");
-                if (bRI != null)
-                {
-                    foreach (CharacterModel.RendererInfo rendererInfo in bRI)
-                    {
-                        if (rendererInfo.renderer is SkinnedMeshRenderer)
-                        {
-                            mainRenderer = (SkinnedMeshRenderer)rendererInfo.renderer;
-                            break;
-                        }
-                    }
-                    if (mainRenderer != null)
-                    {
-                        characterModel.SetFieldValue<SkinnedMeshRenderer>("mainSkinnedMeshRenderer", mainRenderer);
-                    }
-                }
-            }
-
-            LanguageAPI.Add("BANDITRELOADEDBODY_DEFAULT_SKIN_NAME", "Default");
-
-            LoadoutAPI.SkinDefInfo skinDefInfo = default(LoadoutAPI.SkinDefInfo);
-            skinDefInfo.BaseSkins = Array.Empty<SkinDef>();
-            skinDefInfo.GameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>();
-            skinDefInfo.Icon = LoadoutAPI.CreateSkinIcon(new Color(143f / 255f, 132f / 255f, 106f / 255f), Color.cyan, new Color(92f / 255f, 136f / 255f, 167f / 255f), new Color(25f / 255f, 50f / 255f, 57f / 255f));
-            skinDefInfo.MeshReplacements = new SkinDef.MeshReplacement[]
-            {
-                new SkinDef.MeshReplacement
-                {
-                    renderer = mainRenderer,
-                    mesh = mainRenderer.sharedMesh
-                }
-            };
-            skinDefInfo.Name = "BANDITRELOADEDBODY_DEFAULT_SKIN_NAME";
-            skinDefInfo.NameToken = "BANDITRELOADEDBODY_DEFAULT_SKIN_NAME";
-            skinDefInfo.RendererInfos = characterModel.baseRendererInfos;
-            skinDefInfo.RootObject = model;
-            skinDefInfo.UnlockableName = "";
-            skinDefInfo.MinionSkinReplacements = new SkinDef.MinionSkinReplacement[0];
-            skinDefInfo.ProjectileGhostReplacements = new SkinDef.ProjectileGhostReplacement[0];
-
-            SkinDef defaultSkin = LoadoutAPI.CreateNewSkinDef(skinDefInfo);
-
-            skinController.skins = new SkinDef[1]
-            {
-                defaultSkin,
-            };
+            BuffDef cloakDamageBuffDef = BuffDef.CreateInstance<BuffDef>();
+            cloakDamageBuffDef.buffColor = BanditColor;
+            cloakDamageBuffDef.canStack = false;
+            cloakDamageBuffDef.iconSprite = Resources.Load<Sprite>("Textures/BuffIcons/texBuffFullCritIcon");
+            cloakDamageBuffDef.name = "BanditReloadedCloakDamage";
+            ModContentPack.buffDefs.Add(cloakDamageBuffDef);
         }
 
         private void SetupLOEffect()
@@ -2054,7 +1850,7 @@ namespace BanditReloaded
             EffectComponent ecMid = loEffectMid.GetComponent<EffectComponent>();
             ecMid.soundName = "Play_item_proc_armorReduction_hit";
             ecMid.applyScale = false;
-            EffectAPI.AddEffect(loEffectMid);
+            ModContentPack.effectDefs.Add(new EffectDef(loEffectMid));
 
             loEffectHigh = Resources.Load<GameObject>("prefabs/effects/AncientWispEnrage").InstantiateClone("BanditReloadedLOHighEffect", false);
             Transform effectTransform = loEffectHigh.transform.Find("SwingTrail");
@@ -2071,7 +1867,7 @@ namespace BanditReloaded
 
             Destroy(loEffectHigh.GetComponent<ShakeEmitter>());
 
-            EffectAPI.AddEffect(loEffectHigh);
+            ModContentPack.effectDefs.Add(new EffectDef(loEffectHigh));
         }
     }
 }

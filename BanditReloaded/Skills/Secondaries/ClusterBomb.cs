@@ -16,7 +16,7 @@ namespace EntityStates.BanditReloadedSkills
             this.duration = ClusterBomb.baseDuration / this.attackSpeedStat;
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
-            base.PlayAnimation("Gesture", "FireRevolver", "FireRevolver.playbackRate", this.duration);
+            base.PlayAnimation("Gesture, Additive", "SlashBlade", "SlashBlade.playbackRate", this.duration);
             Util.PlaySound("Play_BanditReloaded_dynamite_toss", base.gameObject);
             if (base.isAuthority)
             {

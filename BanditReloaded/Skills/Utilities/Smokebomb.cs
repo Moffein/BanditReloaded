@@ -18,14 +18,19 @@ namespace EntityStates.BanditReloadedSkills
             {
                 if (NetworkServer.active)
                 {
-                    base.characterBody.AddBuff(BuffIndex.Cloak);
-                    base.characterBody.AddBuff(BuffIndex.CloakSpeed);
+                    base.characterBody.AddBuff(RoR2Content.Buffs.Cloak);
+                    base.characterBody.AddBuff(RoR2Content.Buffs.CloakSpeed);
                 }
                 BanditHelpers.TriggerQuickdraw(base.characterBody.skillLocator);
                 if (NetworkServer.active)
                 {
                     base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, CastSmokescreenNoDelay.duration + 0.5f);
                 }
+            }
+
+            if (base.characterMotor && !base.characterMotor.isGrounded)
+            {
+                base.PlayAnimation("Gesture, Additive", "ThrowSmokebomb", "ThrowSmokebomb.playbackRate", 0.2f);
             }
         }
 
@@ -35,13 +40,13 @@ namespace EntityStates.BanditReloadedSkills
             {
                 if (NetworkServer.active)
                 {
-                    if (base.characterBody.HasBuff(BuffIndex.Cloak))
+                    if (base.characterBody.HasBuff(RoR2Content.Buffs.Cloak))
                     {
-                        base.characterBody.RemoveBuff(BuffIndex.Cloak);
+                        base.characterBody.RemoveBuff(RoR2Content.Buffs.Cloak);
                     }
-                    if (base.characterBody.HasBuff(BuffIndex.CloakSpeed))
+                    if (base.characterBody.HasBuff(RoR2Content.Buffs.CloakSpeed))
                     {
-                        base.characterBody.RemoveBuff(BuffIndex.CloakSpeed);
+                        base.characterBody.RemoveBuff(RoR2Content.Buffs.CloakSpeed);
                     }
                 }
                 BanditHelpers.PlayCloakDamageSound(base.characterBody);
@@ -61,6 +66,10 @@ namespace EntityStates.BanditReloadedSkills
                 temporaryOverlay.animateShaderAlpha = true;
             }
             Util.PlaySound(CastSmokescreenNoDelay.stopCloakSoundString, base.gameObject);
+            if (this.animator)
+            {
+                this.animator.SetLayerWeight(this.animator.GetLayerIndex("Body, StealthWeapon"), 0f);
+            }
 
             base.OnExit();
         }
@@ -94,21 +103,29 @@ namespace EntityStates.BanditReloadedSkills
                 this.animator.PlayInFixedTime("LightImpact", layerIndex, 0f);
             }
 
-            new BlastAttack
+            if (NetworkServer.active)
             {
-                attacker = base.gameObject,
-                inflictor = base.gameObject,
-                teamIndex = TeamComponent.GetObjectTeam(base.gameObject),
-                baseDamage = this.damageStat * CastSmokescreenNoDelay.damageCoefficient,
-                baseForce = CastSmokescreenNoDelay.forceMagnitude,
-                position = base.transform.position,
-                radius = CastSmokescreenNoDelay.radius,
-                falloffModel = BlastAttack.FalloffModel.None,
-                damageType = CastSmokescreenNoDelay.nonLethal ? (DamageType.Stun1s | DamageType.NonLethal) : DamageType.Stun1s,
-                procCoefficient = CastSmokescreenNoDelay.procCoefficient,
-                crit = base.RollCrit(),
-                attackerFiltering = AttackerFiltering.NeverHit
-            }.Fire();
+                new BlastAttack
+                {
+                    attacker = base.gameObject,
+                    inflictor = base.gameObject,
+                    teamIndex = TeamComponent.GetObjectTeam(base.gameObject),
+                    baseDamage = this.damageStat * CastSmokescreenNoDelay.damageCoefficient,
+                    baseForce = CastSmokescreenNoDelay.forceMagnitude,
+                    position = base.transform.position,
+                    radius = CastSmokescreenNoDelay.radius,
+                    falloffModel = BlastAttack.FalloffModel.None,
+                    damageType = CastSmokescreenNoDelay.nonLethal ? (DamageType.Stun1s | DamageType.NonLethal) : DamageType.Stun1s,
+                    procCoefficient = CastSmokescreenNoDelay.procCoefficient,
+                    crit = base.RollCrit(),
+                    attackerFiltering = AttackerFiltering.NeverHit
+                }.Fire();
+            }
+
+            if (base.characterMotor)
+            {
+                base.characterMotor.velocity = new Vector3(base.characterMotor.velocity.x, 17f, base.characterMotor.velocity.z);
+            }
         }
 
         public override InterruptPriority GetMinimumInterruptPriority()
