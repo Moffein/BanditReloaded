@@ -17,6 +17,12 @@ namespace BanditReloaded.Hooks
 
         public static void AddHook()
         {
+            On.EntityStates.Bandit2.StealthMode.OnEnter += (orig, self) =>
+            {
+                orig(self);
+                Debug.Log(EntityStates.Bandit2.StealthMode.blastAttackRadius);
+            };
+
             On.RoR2.HealthComponent.TakeDamage += (orig, self, damageInfo) =>
             {
                 bool aliveBeforeHit = self.alive;
@@ -57,6 +63,7 @@ namespace BanditReloaded.Hooks
                         resetCooldownsOnKill = true;
                         if ((damageInfo.damageType & DamageType.SlowOnHit) > 0)
                         {
+                            damageInfo.damageType &= ~DamageType.SlowOnHit;
                             isBarrage = true;
                         }
 
@@ -87,6 +94,11 @@ namespace BanditReloaded.Hooks
                                     debuffCount++;
                                 }
                             }
+                        }
+
+                        if (isBarrage && self.body.HasBuff(ModContentPack.lightsOutBuff))
+                        {
+                            debuffCount--;
                         }
 
                         float buffDamage = 0f;
@@ -171,6 +183,7 @@ namespace BanditReloaded.Hooks
                             {
                                 self.body.AddTimedBuff(ModContentPack.skullBuff, 3f);
                             }
+                            self.body.AddTimedBuff(ModContentPack.lightsOutBuff, GracePeriodComponent.graceDuration);
 
                             if (graceComponent && resetDuration > 0f)
                             {

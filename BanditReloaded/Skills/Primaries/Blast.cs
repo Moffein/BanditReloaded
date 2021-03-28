@@ -95,7 +95,7 @@ namespace EntityStates.BanditReloadedSkills
             {
                 return InterruptPriority.Any;
             }
-            return InterruptPriority.Skill;
+            return InterruptPriority.PrioritySkill;
         }
 
         public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");

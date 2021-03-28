@@ -68,7 +68,7 @@ namespace EntityStates.BanditReloadedSkills
 
         public override InterruptPriority GetMinimumInterruptPriority()
         {
-            return InterruptPriority.Pain;
+            return InterruptPriority.Frozen;
         }
         public static float baseDuration;
         public static string prepSoundString = "Play_bandit2_R_load";
@@ -172,7 +172,7 @@ namespace EntityStates.BanditReloadedSkills
 
         public override InterruptPriority GetMinimumInterruptPriority()
         {
-            return InterruptPriority.Skill;
+            return InterruptPriority.PrioritySkill;
         }
 
         public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");

@@ -49,7 +49,7 @@ namespace EntityStates.BanditReloadedSkills
 
         public override InterruptPriority GetMinimumInterruptPriority()
         {
-            return InterruptPriority.PrioritySkill;
+            return InterruptPriority.Pain;
         }
 
         public static GameObject projectilePrefab;

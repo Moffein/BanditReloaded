@@ -78,6 +78,12 @@ namespace EntityStates.BanditReloadedSkills
         {
             base.FixedUpdate();
             this.buttonReleased |= !base.inputBank.skill1.down;
+            if (!playedSound && base.fixedAge > this.maxDuration * 0.5f)
+            {
+                playedSound = true;
+                base.PlayCrossfade("Gesture, Additive", "EnterReload", "Reload.playbackRate", this.maxDuration * 0.5f, 0.1f);
+                Util.PlaySound("Play_bandit_M1_pump", base.gameObject);
+            }
             if (base.fixedAge >= this.maxDuration && base.isAuthority)
             {
                 this.outer.SetNextStateToMain();
@@ -91,7 +97,7 @@ namespace EntityStates.BanditReloadedSkills
             {
                 return InterruptPriority.Any;
             }
-            return InterruptPriority.Skill;
+            return InterruptPriority.PrioritySkill;
         }
 
         public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");
@@ -113,5 +119,7 @@ namespace EntityStates.BanditReloadedSkills
         private float minDuration;
         private bool buttonReleased;
         public static bool noReload;
+
+        private bool playedSound = false;
     }
 }
