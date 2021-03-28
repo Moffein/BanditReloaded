@@ -19,7 +19,7 @@ namespace BanditReloaded.Components
             }
         }
 
-        [ClientRpc]
+        /*[ClientRpc]
         public void RpcPlayLOMid()
         {
             Util.PlaySound("Play_item_proc_armorReduction_hit", this.gameObject);
@@ -29,7 +29,7 @@ namespace BanditReloaded.Components
         public void RpcPlayLOHigh()
         {
             Util.PlaySound("Play_item_proc_armorReduction_shatter", this.gameObject);
-        }
+        }*/
 
         private void Awake()
         {

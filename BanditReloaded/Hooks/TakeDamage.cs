@@ -17,12 +17,6 @@ namespace BanditReloaded.Hooks
 
         public static void AddHook()
         {
-            On.EntityStates.Bandit2.StealthMode.OnEnter += (orig, self) =>
-            {
-                orig(self);
-                Debug.Log(EntityStates.Bandit2.StealthMode.blastAttackRadius);
-            };
-
             On.RoR2.HealthComponent.TakeDamage += (orig, self, damageInfo) =>
             {
                 bool aliveBeforeHit = self.alive;
@@ -30,7 +24,6 @@ namespace BanditReloaded.Hooks
                 bool isDynamiteBundle = false;
                 bool isBarrage = false;
                 float resetDuration = 0f;
-                BanditNetworkCommands bnc = null;
 
                 GracePeriodComponent graceComponent = self.gameObject.GetComponent<GracePeriodComponent>();
                 if (!graceComponent)
@@ -57,7 +50,6 @@ namespace BanditReloaded.Hooks
 
                 if (banditAttacker && graceComponent)
                 {
-                    bnc = damageInfo.attacker.GetComponent<BanditNetworkCommands>();
                     if ((damageInfo.damageType & DamageType.ResetCooldownsOnKill) > 0)
                     {
                         resetCooldownsOnKill = true;
@@ -151,6 +143,12 @@ namespace BanditReloaded.Hooks
                             if (resetCooldownsOnKill)
                             {
                                 pd.damage *= 3f;
+
+                                BanditNetworkCommands bnc = damageInfo.attacker.GetComponent<BanditNetworkCommands>();
+                                if (bnc)
+                                {
+                                    bnc.RpcResetSpecialCooldown();
+                                }
                             }
                             else
                             {
@@ -210,14 +208,6 @@ namespace BanditReloaded.Hooks
                                         orig(self, damageInfo);
                                     }
                                 }
-                            }
-                        }
-
-                        if (isDynamiteBundle && resetCooldownsOnKill)
-                        {
-                            if (bnc)
-                            {
-                                bnc.RpcResetSpecialCooldown();
                             }
                         }
                     }
