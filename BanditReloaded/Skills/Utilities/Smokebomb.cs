@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BanditReloaded;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -16,16 +17,17 @@ namespace EntityStates.BanditReloadedSkills
             this.CastSmoke();
             if (base.characterBody)
             {
+                if (base.isAuthority)
+                {
+                    base.characterBody.isSprinting = true;
+                }
                 if (NetworkServer.active)
                 {
                     base.characterBody.AddBuff(RoR2Content.Buffs.Cloak);
-                    base.characterBody.AddBuff(RoR2Content.Buffs.CloakSpeed);
+                    base.characterBody.AddBuff(ModContentPack.cloakSpeedBuff);
+                    base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, CastSmokescreenNoDelay.duration + 0.5f);
                 }
                 BanditHelpers.TriggerQuickdraw(base.characterBody.skillLocator);
-                if (NetworkServer.active)
-                {
-                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, CastSmokescreenNoDelay.duration + 0.5f);
-                }
             }
 
             if (base.characterMotor && !base.characterMotor.isGrounded)
@@ -44,9 +46,9 @@ namespace EntityStates.BanditReloadedSkills
                     {
                         base.characterBody.RemoveBuff(RoR2Content.Buffs.Cloak);
                     }
-                    if (base.characterBody.HasBuff(RoR2Content.Buffs.CloakSpeed))
+                    if (base.characterBody.HasBuff(ModContentPack.cloakSpeedBuff))
                     {
-                        base.characterBody.RemoveBuff(RoR2Content.Buffs.CloakSpeed);
+                        base.characterBody.RemoveBuff(ModContentPack.cloakSpeedBuff);
                     }
                 }
                 BanditHelpers.PlayCloakDamageSound(base.characterBody);

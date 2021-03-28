@@ -4,6 +4,7 @@ using System.Text;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
+using BanditReloaded;
 
 namespace EntityStates.BanditReloadedSkills
 {
@@ -31,10 +32,10 @@ namespace EntityStates.BanditReloadedSkills
             if (base.characterBody)
             {
                 base.characterBody.SetAimTimer(this.duration);
-                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
                 {
-                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
-                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, 1.2f);
+                    base.characterBody.ClearTimedBuffs(ModContentPack.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, 1.2f);
                 }
             }
         }

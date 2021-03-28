@@ -25,7 +25,7 @@ namespace BanditReloaded
         }
         private void Update()
         {
-            if (!cb || cb.GetBuffCount(BanditReloaded.thermiteBuff) <= 0)
+            if (!cb || cb.GetBuffCount(ModContentPack.thermiteBuff) <= 0)
             {
                 DestroySelf();
             }

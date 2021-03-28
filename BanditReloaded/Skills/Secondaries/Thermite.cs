@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BanditReloaded;
 using RoR2;
 using RoR2.Projectile;
 using UnityEngine;
@@ -24,16 +25,16 @@ namespace EntityStates.BanditReloadedSkills
 
             if (base.characterBody)
             {
-                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
                 {
-                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
-                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, 1.2f);
+                    base.characterBody.ClearTimedBuffs(ModContentPack.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, 1.2f);
                 }
                 base.characterBody.SetAimTimer(this.duration);
-                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
                 {
-                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
-                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, 1.2f);
+                    base.characterBody.ClearTimedBuffs(ModContentPack.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, 1.2f);
                 }
             }
         }
@@ -77,7 +78,6 @@ namespace EntityStates.BanditReloadedSkills
             this.duration = ThermiteBomb.baseDuration / this.attackSpeedStat;
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
-            //base.PlayAnimation("Gesture", "FireRevolver", "FireRevolver.playbackRate", this.duration);
             Util.PlaySound("Play_BanditReloaded_flare", base.gameObject);
             if (ThermiteBomb.effectPrefab)
             {

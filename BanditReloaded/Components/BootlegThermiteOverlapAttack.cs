@@ -48,8 +48,8 @@ namespace BanditReloaded.Components
                         this.stuckObjectHealthComponent = this.stuckObject.GetComponent<HealthComponent>();
                         if (this.stuckObjectHealthComponent.body)
                         {
-                            this.stuckObjectHealthComponent.body.AddBuff(BanditReloaded.thermiteBuff);
-                            this.cachedThermiteCount = this.stuckObjectHealthComponent.body.GetBuffCount(BanditReloaded.thermiteBuff);
+                            this.stuckObjectHealthComponent.body.AddBuff(ModContentPack.thermiteBuff);
+                            this.cachedThermiteCount = this.stuckObjectHealthComponent.body.GetBuffCount(ModContentPack.thermiteBuff);
                         }
 
                         if (this.projectileDamage)
@@ -96,9 +96,9 @@ namespace BanditReloaded.Components
 
         public void OnDestroy()
         {
-            if (this.stuckObject && this.stuckObjectHealthComponent.body && this.stuckObjectHealthComponent.body.HasBuff(BanditReloaded.thermiteBuff))
+            if (this.stuckObject && this.stuckObjectHealthComponent.body && this.stuckObjectHealthComponent.body.HasBuff(ModContentPack.thermiteBuff))
             {
-                this.stuckObjectHealthComponent.body.RemoveBuff(BanditReloaded.thermiteBuff);
+                this.stuckObjectHealthComponent.body.RemoveBuff(ModContentPack.thermiteBuff);
             }
         }
 
@@ -210,7 +210,7 @@ namespace BanditReloaded.Components
                         }
                         if (bt.stuckObject && bt.stuckObjectHealthComponent && bt.stuckObjectHealthComponent.body)
                         {
-                            bt.cachedThermiteCount = bt.stuckObjectHealthComponent.body.GetBuffCount(BanditReloaded.thermiteBuff);
+                            bt.cachedThermiteCount = bt.stuckObjectHealthComponent.body.GetBuffCount(ModContentPack.thermiteBuff);
                         }
                     }
                 }

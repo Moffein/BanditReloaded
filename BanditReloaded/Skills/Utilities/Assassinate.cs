@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BanditReloaded;
 using RoR2;
 using UnityEngine;
 
@@ -39,10 +40,10 @@ namespace EntityStates.BanditReloadedSkills
 
             if (base.characterBody)
             {
-                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
                 {
-                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
-                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, this.chargeDuration + 0.5f);
+                    base.characterBody.ClearTimedBuffs(ModContentPack.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, this.chargeDuration + 0.5f);
                 }
             }
         }

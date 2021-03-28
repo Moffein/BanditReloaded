@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using RoR2;
 using UnityEngine;
+using BanditReloaded;
 
 namespace EntityStates.BanditReloadedSkills
 {
@@ -28,10 +29,10 @@ namespace EntityStates.BanditReloadedSkills
                 base.characterBody.SetAimTimer(this.duration);
                 BanditHelpers.TriggerQuickdraw(base.characterBody.skillLocator);
 
-                if (base.characterBody.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+                if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
                 {
-                    base.characterBody.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
-                    base.characterBody.AddTimedBuff(BanditReloaded.BanditReloaded.cloakDamageBuff, 1.2f);
+                    base.characterBody.ClearTimedBuffs(ModContentPack.cloakDamageBuff);
+                    base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, 1.2f);
                 }
             }
         }
@@ -41,7 +42,7 @@ namespace EntityStates.BanditReloadedSkills
             base.FixedUpdate();
             if (base.characterBody)
             {
-                base.characterBody.SetSpreadBloom(FireBarrage.spread, false);
+                base.characterBody.SetSpreadBloom(FireBarrage.spread * 0.8f, false);
                 base.characterBody.SetAimTimer(this.duration);
             }
             if (base.fixedAge >= this.duration && base.isAuthority && !inputBank.skill4.down)
@@ -143,13 +144,13 @@ namespace EntityStates.BanditReloadedSkills
                             isCrit = this.isCrit,
                             HitEffectNormal = true,
                             radius = 0.4f,
-                            maxDistance = 80f,
+                            maxDistance = FireBarrageScepter.maxDistance,
                             procCoefficient = 1f,
                             damage = FireBarrageScepter.damageCoefficient * this.damageStat,
                             damageType = DamageType.ResetCooldownsOnKill | DamageType.SlowOnHit,
                             smartCollision = true
                         }.Fire();
-                        base.characterBody.SetSpreadBloom(FireBarrage.spread, false);
+                        base.characterBody.SetSpreadBloom(FireBarrage.spread * 0.8f, false);
                     }
                 }
                 else if (base.fixedAge - prevShot > endLag)
@@ -185,6 +186,7 @@ namespace EntityStates.BanditReloadedSkills
         public static int maxBullets;
         public static float endLag;
         public static float spread;
+        public static float maxDistance;
 
         private int bulletCount;
         private ChildLocator childLocator;

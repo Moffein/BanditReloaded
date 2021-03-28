@@ -54,6 +54,7 @@ namespace EntityStates.BanditReloadedSkills
 
         public static GameObject projectilePrefab;
         public static float damageCoefficient;
+        public static float acidDamageCoefficient;
         public static float force = 0f;
         public static float selfForce = 0f;
         public static float baseDuration;

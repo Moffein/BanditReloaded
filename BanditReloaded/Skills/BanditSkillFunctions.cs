@@ -1,4 +1,5 @@
-﻿using RoR2;
+﻿using BanditReloaded;
+using RoR2;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,29 +11,24 @@ namespace EntityStates.BanditReloadedSkills
     {
         public static void TriggerQuickdraw(SkillLocator skills)
         {
-            if (enablePassive)
-            {
-                skills.primary.stock = skills.primary.maxStock;
-                skills.primary.rechargeStopwatch = 0f;
-            }
+            skills.primary.stock = skills.primary.maxStock;
+            skills.primary.rechargeStopwatch = 0f;
         }
 
         public static void ConsumeCloakDamageBuff(CharacterBody cb)
         {
             if (NetworkServer.active && cb)
             {
-                cb.ClearTimedBuffs(BanditReloaded.BanditReloaded.cloakDamageBuff);
+                cb.ClearTimedBuffs(ModContentPack.cloakDamageBuff);
             }
         }
 
         public static void PlayCloakDamageSound(CharacterBody cb)
         {
-            if (cb && cb.HasBuff(BanditReloaded.BanditReloaded.cloakDamageBuff))
+            if (cb && cb.HasBuff(ModContentPack.cloakDamageBuff))
             {
                 Util.PlaySound("Play_BanditReloaded_cloakdamage", cb.gameObject);
             }
         }
-
-        public static bool enablePassive;
     }
 }
