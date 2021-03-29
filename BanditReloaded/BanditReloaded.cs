@@ -1099,6 +1099,7 @@ namespace BanditReloaded
         {
             BanditBody.tag = "Player";
             CharacterBody cb = BanditBody.GetComponent<CharacterBody>();
+            //cb.portraitIcon = Resources.Load<GameObject>("prefabs/characterbodies/banditbody").GetComponent<CharacterBody>().portraitIcon;
             cb.subtitleNameToken = "BANDITRELOADED_BODY_SUBTITLE";
             cb.baseNameToken = "BANDITRELOADED_BODY_NAME";
             cb.bodyFlags = CharacterBody.BodyFlags.ImmuneToExecutes;

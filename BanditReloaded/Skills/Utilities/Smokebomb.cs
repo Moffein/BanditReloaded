@@ -46,9 +46,9 @@ namespace EntityStates.BanditReloadedSkills
                     {
                         base.characterBody.RemoveBuff(RoR2Content.Buffs.Cloak);
                     }
-                    if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
+                    if (base.characterBody.HasBuff(RoR2Content.Buffs.CloakSpeed))
                     {
-                        base.characterBody.RemoveBuff(ModContentPack.cloakDamageBuff);
+                        base.characterBody.RemoveBuff(RoR2Content.Buffs.CloakSpeed);
                     }
                 }
                 BanditHelpers.PlayCloakDamageSound(base.characterBody);
