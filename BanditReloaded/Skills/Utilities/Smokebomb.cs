@@ -24,7 +24,7 @@ namespace EntityStates.BanditReloadedSkills
                 if (NetworkServer.active)
                 {
                     base.characterBody.AddBuff(RoR2Content.Buffs.Cloak);
-                    base.characterBody.AddBuff(ModContentPack.cloakSpeedBuff);
+                    base.characterBody.AddBuff(RoR2Content.Buffs.CloakSpeed);
                     base.characterBody.AddTimedBuff(ModContentPack.cloakDamageBuff, CastSmokescreenNoDelay.duration + 0.5f);
                 }
                 BanditHelpers.TriggerQuickdraw(base.characterBody.skillLocator);
@@ -46,9 +46,9 @@ namespace EntityStates.BanditReloadedSkills
                     {
                         base.characterBody.RemoveBuff(RoR2Content.Buffs.Cloak);
                     }
-                    if (base.characterBody.HasBuff(ModContentPack.cloakSpeedBuff))
+                    if (base.characterBody.HasBuff(ModContentPack.cloakDamageBuff))
                     {
-                        base.characterBody.RemoveBuff(ModContentPack.cloakSpeedBuff);
+                        base.characterBody.RemoveBuff(ModContentPack.cloakDamageBuff);
                     }
                 }
                 BanditHelpers.PlayCloakDamageSound(base.characterBody);

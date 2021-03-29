@@ -4,7 +4,6 @@ using System.Text;
 using UnityEngine;
 using RoR2;
 using RoR2.Projectile;
-using R2API.Utils;
 using UnityEngine.Networking;
 
 namespace BanditReloaded.Components
@@ -20,7 +19,7 @@ namespace BanditReloaded.Components
         {
             if (NetworkServer.active)
             {
-                if (projectileImpactExplosion.GetFieldValue<bool>("hasImpact"))
+                if (projectileImpactExplosion.hasImpact)
                 {
                     Destroy(this);
                 }

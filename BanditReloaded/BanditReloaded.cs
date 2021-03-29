@@ -3,33 +3,25 @@ using BanditReloaded.Hooks;
 using BepInEx;
 using BepInEx.Configuration;
 using EntityStates;
-using EntityStates.Bandit2.Weapon;
 using EntityStates.BanditReloadedSkills;
-using EntityStates.Engi.EngiWeapon;
-using MonoMod;
-using MonoMod.Utils;
-using R2API;
-using R2API.Utils;
 using RoR2;
-using RoR2.Audio;
 using RoR2.CharacterAI;
 using RoR2.Projectile;
 using RoR2.Skills;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using EnigmaticThunder;
+
 namespace BanditReloaded
 {
-    [BepInDependency("com.bepis.r2api")]
+    [BepInDependency("com.EnigmaDev.EnigmaticThunder")]
     [BepInDependency("com.DestroyedClone.AncientScepter", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin("com.Moffein.BanditReloaded_v4", "Bandit Reloaded v4 beta 1", "4.0.0")]
-    [R2API.Utils.R2APISubmoduleDependency(nameof(PrefabAPI), nameof(ResourcesAPI), nameof(LanguageAPI), nameof(SoundAPI), nameof(LoadoutAPI))]
-    [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     class BanditReloaded : BaseUnityPlugin
     {
         #region cfg
@@ -83,48 +75,46 @@ namespace BanditReloaded
         public Color BanditColor = new Color(0.8039216f, 0.482352942f, 0.843137264f);
         String BanditBodyName = "";
 
-        const string assetPrefix = "@MoffeinBanditReloaded";
-
         private readonly Shader hotpoo = Resources.Load<Shader>("Shaders/Deferred/hgstandard");
 
         public void RegisterLanguageTokens()
         {
-            LanguageAPI.Add("BANDITRELOADED_PASSIVE_NAME", "Quickdraw");
-            LanguageAPI.Add("BANDITRELOADED_PASSIVE_DESCRIPTION", "The Bandit <style=cIsUtility>instantly reloads</style> his primary when using other skills.");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PASSIVE_NAME", "Quickdraw");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PASSIVE_DESCRIPTION", "The Bandit <style=cIsUtility>instantly reloads</style> his primary when using other skills.");
 
-            LanguageAPI.Add("BANDITRELOADED_OUTRO_FLAVOR", "..and so he left, with his pyrrhic plunder.");
-            LanguageAPI.Add("BANDITRELOADED_OUTRO_EASTEREGG_FLAVOR", "..and so he left, seeking warmth.");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_OUTRO_FLAVOR", "..and so he left, with his pyrrhic plunder.");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_OUTRO_EASTEREGG_FLAVOR", "..and so he left, seeking warmth.");
 
-            LanguageAPI.Add("BANDITRELOADED_BODY_NAME", "Classic Bandit");
-            LanguageAPI.Add("BANDITRELOADED_BODY_SUBTITLE", "Wanted Dead or Alive");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_BODY_NAME", "Classic Bandit");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_BODY_SUBTITLE", "Wanted Dead or Alive");
 
             string BanditDesc = "The Bandit is a hit-and-run survivor who uses dirty tricks to assassinate his targets.<color=#CCD3E0>" + Environment.NewLine + Environment.NewLine;
             BanditDesc += "< ! > Space out your skill usage to keep firing Blast, or dump them all at once for massive damage!" + Environment.NewLine + Environment.NewLine;
             BanditDesc += "< ! > Use grenades to apply debuffs to enemies, boosting the damage of Lights Out." + Environment.NewLine + Environment.NewLine;
             BanditDesc += "< ! > Use Smokebomb to either run away or to stun many enemies at once." + Environment.NewLine + Environment.NewLine;
             BanditDesc += "< ! > Dealing a killing blow with Lights Out allows you to chain many skills together, allowing for maximum damage AND safety." + Environment.NewLine + Environment.NewLine;
-            LanguageAPI.Add("BANDITRELOADED_BODY_DESC", BanditDesc);
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_BODY_DESC", BanditDesc);
 
-            LanguageAPI.Add("KEYWORD_BANDITRELOADED_EXECUTE", "<style=cKeywordName>Executing</style><style=cSub>The ability <style=cIsHealth>instantly kills</style> enemies below <style=cIsHealth>"+TakeDamage.specialExecuteThreshold.ToString("P0").Replace(" ", "").Replace(",", "") + " HP</style>.</style>");
-            LanguageAPI.Add("KEYWORD_BANDITRELOADED_RAPIDFIRE", "<style=cKeywordName>Rapid-Fire</style><style=cSub>The skill fires faster if you click faster.</style>");
-            LanguageAPI.Add("KEYWORD_BANDITRELOADED_THERMITE", "<style=cKeywordName>Thermite</style><style=cSub>Reduce movement speed by <style=cIsDamage>15%</style> per stack. Reduce armor by <style=cIsDamage>2.5</style> per stack.</style>");
+            EnigmaticThunder.Modules.Languages.Add("KEYWORD_BANDITRELOADED_EXECUTE", "<style=cKeywordName>Executing</style><style=cSub>The ability <style=cIsHealth>instantly kills</style> enemies below <style=cIsHealth>"+TakeDamage.specialExecuteThreshold.ToString("P0").Replace(" ", "").Replace(",", "") + " HP</style>.</style>");
+            EnigmaticThunder.Modules.Languages.Add("KEYWORD_BANDITRELOADED_RAPIDFIRE", "<style=cKeywordName>Rapid-Fire</style><style=cSub>The skill fires faster if you click faster.</style>");
+            EnigmaticThunder.Modules.Languages.Add("KEYWORD_BANDITRELOADED_THERMITE", "<style=cKeywordName>Thermite</style><style=cSub>Reduce movement speed by <style=cIsDamage>15%</style> per stack. Reduce armor by <style=cIsDamage>2.5</style> per stack.</style>");
 
-            LanguageAPI.Add("KEYWORD_BANDITRELOADED_DEBUFFBOOST", "<style=cKeywordName>Debuff Boosted</style><style=cSub>Gain <style=cIsDamage>+" + TakeDamage.specialDebuffBonus.ToString("P0").Replace(" ", "").Replace(",", "") + " TOTAL damage</style> for each unique debuff on the enemy.");
+            EnigmaticThunder.Modules.Languages.Add("KEYWORD_BANDITRELOADED_DEBUFFBOOST", "<style=cKeywordName>Debuff Boosted</style><style=cSub>Gain <style=cIsDamage>+" + TakeDamage.specialDebuffBonus.ToString("P0").Replace(" ", "").Replace(",", "") + " TOTAL damage</style> for each unique debuff on the enemy.");
 
-            LanguageAPI.Add("BANDITRELOADED_PRIMARY_NAME", "Blast");
-            LanguageAPI.Add("BANDITRELOADED_PRIMARY_ALT_NAME", "Scatter");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PRIMARY_NAME", "Blast");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PRIMARY_ALT_NAME", "Scatter");
 
-            LanguageAPI.Add("BANDITRELOADED_SECONDARY_NAME", "Dynamite Toss");
-            LanguageAPI.Add("BANDITRELOADED_SECONDARY_ALT_NAME", "Thermite Flare");
-            LanguageAPI.Add("BANDITRELOADED_SECONDARY_ALT2_NAME", "Acid Bomb");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_SECONDARY_NAME", "Dynamite Toss");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_SECONDARY_ALT_NAME", "Thermite Flare");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_SECONDARY_ALT2_NAME", "Acid Bomb");
 
-            LanguageAPI.Add("BANDITRELOADED_UTILITY_NAME", "Smokebomb");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_UTILITY_NAME", "Smokebomb");
 
-            LanguageAPI.Add("BANDITRELOADED_SPECIAL_NAME", "Lights Out");
-            LanguageAPI.Add("BANDITRELOADED_SPECIAL_ALT_NAME", "Rack em Up");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_SPECIAL_NAME", "Lights Out");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_SPECIAL_ALT_NAME", "Rack em Up");
 
-            LanguageAPI.Add("BANDITRELOADED_SPECIAL_SCEPTER_NAME", "Decapitate");
-            LanguageAPI.Add("BANDITRELOADED_SPECIAL_ALT_SCEPTER_NAME", "Fistful of Lead");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_SPECIAL_SCEPTER_NAME", "Decapitate");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_SPECIAL_ALT_SCEPTER_NAME", "Fistful of Lead");
         }
 
         public void Start()
@@ -136,14 +126,14 @@ namespace BanditReloaded
 
         public void Awake()
         {
-            LoadResources();
+            ModContentPack.LoadResources();
             ReadConfig();
             SetupBanditBody();
             SetupProjectiles();
             SetAttributes();
             AssignSkills();
             CreateMaster();
-            CreateLightsOutBuff();
+            CreateBuffs();
 
             RegisterLanguageTokens();
 
@@ -329,15 +319,15 @@ namespace BanditReloaded
             specialSkillFamily.variants = new SkillFamily.Variant[1];
 
             SkillLocator skillComponent = BanditBody.GetComponent<SkillLocator>();
-            Reflection.SetFieldValue<SkillFamily>(skillComponent.primary, "_skillFamily", primarySkillFamily);
-            Reflection.SetFieldValue<SkillFamily>(skillComponent.secondary, "_skillFamily", secondarySkillFamily);
-            Reflection.SetFieldValue<SkillFamily>(skillComponent.utility, "_skillFamily", utilitySkillFamily);
-            Reflection.SetFieldValue<SkillFamily>(skillComponent.special, "_skillFamily", specialSkillFamily);
+            skillComponent.primary._skillFamily = primarySkillFamily;
+            skillComponent.secondary._skillFamily = secondarySkillFamily;
+            skillComponent.utility._skillFamily = utilitySkillFamily;
+            skillComponent.special._skillFamily = specialSkillFamily;
 
             skillComponent.passiveSkill.enabled = true;
             skillComponent.passiveSkill.skillNameToken = "BANDITRELOADED_PASSIVE_NAME";
             skillComponent.passiveSkill.skillDescriptionToken = "BANDITRELOADED_PASSIVE_DESCRIPTION";
-            skillComponent.passiveSkill.icon = Resources.Load<Sprite>(assetPrefix + ":quickdraw.png");
+            skillComponent.passiveSkill.icon = ModContentPack.assets.LoadAsset<Sprite>("quickdraw.png");
 
             #region Blast
             primaryBlastDef = ReloadSkillDef.CreateInstance<ReloadSkillDef>();
@@ -371,7 +361,7 @@ namespace BanditReloaded
             primaryBlastDef.cancelSprintingOnActivation = true;
             primaryBlastDef.canceledFromSprinting = false;
             primaryBlastDef.mustKeyPress = false;
-            primaryBlastDef.icon = Resources.Load<Sprite>(assetPrefix + ":skill1.png");
+            primaryBlastDef.icon = ModContentPack.assets.LoadAsset<Sprite>("skill1.png");
 
             primaryBlastDef.requiredStock = 1;
             primaryBlastDef.stockToConsume = 1;
@@ -415,7 +405,7 @@ namespace BanditReloaded
             primaryScatterDef.cancelSprintingOnActivation = true;
             primaryScatterDef.canceledFromSprinting = false;
             primaryScatterDef.mustKeyPress = false;
-            primaryScatterDef.icon = Resources.Load<Sprite>(assetPrefix + ":skill1a.png");
+            primaryScatterDef.icon = ModContentPack.assets.LoadAsset<Sprite>("skill1a.png");
             primaryScatterDef.requiredStock = 1;
             primaryScatterDef.stockToConsume = 1;
 
@@ -445,7 +435,7 @@ namespace BanditReloaded
             utilityDefA.cancelSprintingOnActivation = false;
             utilityDefA.canceledFromSprinting = false;
             utilityDefA.mustKeyPress = false;
-            utilityDefA.icon = Resources.Load<Sprite>(assetPrefix + ":skill3.png");
+            utilityDefA.icon = ModContentPack.assets.LoadAsset<Sprite>("skill3.png");
             utilityDefA.requiredStock = 1;
             utilityDefA.stockToConsume = 1;
             utilityDefA.forceSprintDuringState = false;
@@ -476,7 +466,7 @@ namespace BanditReloaded
             utilityAltDef.cancelSprintingOnActivation = true;
             utilityAltDef.canceledFromSprinting = false;
             utilityAltDef.mustKeyPress = false;
-            utilityAltDef.icon = Resources.Load<Sprite>(assetPrefix + ":skill3a.png");
+            utilityAltDef.icon = ModContentPack.assets.LoadAsset<Sprite>("skill3a.png");
             utilityAltDef.requiredStock = 1;
             utilityAltDef.stockToConsume = 1;
             ModContentPack.skillDefs.Add(utilityAltDef);
@@ -510,7 +500,7 @@ namespace BanditReloaded
             specialLightsOutDef.rechargeStock = 1;
 
             specialLightsOutDef.activationStateMachineName = "Weapon";
-            specialLightsOutDef.icon = Resources.Load<Sprite>(assetPrefix + ":skill4.png");
+            specialLightsOutDef.icon = ModContentPack.assets.LoadAsset<Sprite>("skill4.png");
             specialLightsOutDef.interruptPriority = EntityStates.InterruptPriority.Pain;
             specialLightsOutDef.beginSkillCooldownOnSkillEnd = true;
             specialLightsOutDef.isCombatSkill = true;
@@ -531,7 +521,7 @@ namespace BanditReloaded
                 + " Explodes for <style=cIsDamage>" + ThermiteBomb.damageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>. New flares <style=cIsUtility>reset the burn timer</style>.";
             thermiteDef.skillDescriptionToken += Environment.NewLine;
             thermiteDef.skillName = "Thermite";
-            thermiteDef.icon = Resources.Load<Sprite>(assetPrefix + ":skill2.png");
+            thermiteDef.icon = ModContentPack.assets.LoadAsset<Sprite>("skill2.png");
             thermiteDef.baseMaxStock = thermiteStock;
             thermiteDef.rechargeStock = 1;
             thermiteDef.beginSkillCooldownOnSkillEnd = false;
@@ -557,7 +547,7 @@ namespace BanditReloaded
                 + " Leaves acid that deals <style=cIsDamage>"+AcidBomb.acidDamageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "" )+ " damage per second</style>.";
             acidBombDef.skillDescriptionToken += Environment.NewLine;
             acidBombDef.skillName = "AcidGrenade";
-            acidBombDef.icon = Resources.Load<Sprite>(assetPrefix + ":skill2a.png");
+            acidBombDef.icon = ModContentPack.assets.LoadAsset<Sprite>("skill2a.png");
             acidBombDef.baseMaxStock = acidStock;
             acidBombDef.rechargeStock = 1;
             acidBombDef.beginSkillCooldownOnSkillEnd = false;
@@ -583,7 +573,7 @@ namespace BanditReloaded
                 + " Can be shot midair for <style=cIsDamage>bonus damage</style>.";
             clusterBombDef.skillDescriptionToken += Environment.NewLine;
             clusterBombDef.skillName = "Dynamite";
-            clusterBombDef.icon = Resources.Load<Sprite>(assetPrefix + ":dynamite_red.png");
+            clusterBombDef.icon = ModContentPack.assets.LoadAsset<Sprite>("dynamite_red.png");
             clusterBombDef.baseMaxStock = cbStock;
             clusterBombDef.rechargeStock = 1;
             clusterBombDef.beginSkillCooldownOnSkillEnd = false;
@@ -627,7 +617,7 @@ namespace BanditReloaded
             specialBarrageDef.baseMaxStock = reuStock;
             specialBarrageDef.rechargeStock = 1;
             specialBarrageDef.activationStateMachineName = "Weapon";
-            specialBarrageDef.icon = Resources.Load<Sprite>(assetPrefix + ":skill3a.png");
+            specialBarrageDef.icon = ModContentPack.assets.LoadAsset<Sprite>("skill3a.png");
             specialBarrageDef.interruptPriority = EntityStates.InterruptPriority.Pain;
             specialBarrageDef.beginSkillCooldownOnSkillEnd = true;
             specialBarrageDef.isCombatSkill = true;
@@ -662,7 +652,7 @@ namespace BanditReloaded
             specialBarrageScepterDef.baseMaxStock = reuStock;
             specialBarrageScepterDef.rechargeStock = 1;
             specialBarrageScepterDef.activationStateMachineName = "Weapon";
-            specialBarrageScepterDef.icon = Resources.Load<Sprite>(assetPrefix + ":reu_scepter.png");
+            specialBarrageScepterDef.icon = ModContentPack.assets.LoadAsset<Sprite>("reu_scepter.png");
             specialBarrageScepterDef.interruptPriority = EntityStates.InterruptPriority.Pain;
             specialBarrageScepterDef.beginSkillCooldownOnSkillEnd = true;
             specialBarrageScepterDef.isCombatSkill = true;
@@ -697,7 +687,7 @@ namespace BanditReloaded
             specialLightsOutScepterDef.baseMaxStock = loStock;
             specialLightsOutScepterDef.rechargeStock = 1;
             specialLightsOutScepterDef.activationStateMachineName = "Weapon";
-            specialLightsOutScepterDef.icon = Resources.Load<Sprite>(assetPrefix + ":lo_scepter.png");
+            specialLightsOutScepterDef.icon = ModContentPack.assets.LoadAsset<Sprite>("lo_scepter.png");
             specialLightsOutScepterDef.interruptPriority = EntityStates.InterruptPriority.Pain;
             specialLightsOutScepterDef.beginSkillCooldownOnSkillEnd = true;
             specialLightsOutScepterDef.isCombatSkill = true;
@@ -808,12 +798,12 @@ namespace BanditReloaded
 
         private void SetupAcidBomb()
         {
-            AcidBombObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/banditgrenadeprojectile"), "BanditReloadedAcidBomb", true);
-            AcidBombGhostObject = PrefabAPI.InstantiateClone(AcidBombObject.GetComponent<ProjectileController>().ghostPrefab, "BanditReloadedAcidBombGhost", false);
+            AcidBombObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/banditgrenadeprojectile"), "BanditReloadedAcidBomb", true);
+            AcidBombGhostObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(AcidBombObject.GetComponent<ProjectileController>().ghostPrefab, "BanditReloadedAcidBombGhost", false);
             ModContentPack.projectilePrefabs.Add(AcidBombObject);
             AcidBombObject.GetComponent<ProjectileController>().ghostPrefab = AcidBombGhostObject;
 
-            GameObject puddleObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/crocoleapacid"), "BanditReloadedAcidBombPuddle", true);
+            GameObject puddleObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/crocoleapacid"), "BanditReloadedAcidBombPuddle", true);
             ModContentPack.projectilePrefabs.Add(puddleObject);
             ProjectileDamage puddleDamage = puddleObject.GetComponent<ProjectileDamage>();
             puddleDamage.damageType = DamageType.WeakOnHit;
@@ -823,7 +813,7 @@ namespace BanditReloaded
             pdz.lifetime = 5f;
             pdz.damageCoefficient = AcidBomb.acidDamageCoefficient / AcidBomb.damageCoefficient;
 
-            GameObject abImpact = Resources.Load<GameObject>("prefabs/effects/impacteffects/engimineexplosion").InstantiateClone("BanditReloadedAcidEffect", false);
+            GameObject abImpact = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/effects/impacteffects/engimineexplosion"), "BanditReloadedAcidEffect", false);
             EffectComponent ec = abImpact.GetComponent<EffectComponent>();
             //ec.applyScale = true;
             //ec.disregardZScale = false;
@@ -855,8 +845,8 @@ namespace BanditReloaded
 
         private void SetupThermite()
         {
-            ThermiteObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/thermite"), "BanditReloadedThermite", true);
-            ThermiteGhostObject = PrefabAPI.InstantiateClone(ThermiteObject.GetComponent<ProjectileController>().ghostPrefab, "BanditReloadedThermiteGhost", false);
+            ThermiteObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/thermite"), "BanditReloadedThermite", true);
+            ThermiteGhostObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(ThermiteObject.GetComponent<ProjectileController>().ghostPrefab, "BanditReloadedThermiteGhost", false);
             ModContentPack.projectilePrefabs.Add(ThermiteObject);
             ThermiteObject.GetComponent<ProjectileController>().ghostPrefab = ThermiteGhostObject;
 
@@ -903,7 +893,7 @@ namespace BanditReloaded
 
             ThermiteBomb.projectilePrefab = ThermiteObject;
 
-            GameObject thermiteBurnEffect = Resources.Load<GameObject>("prefabs/effects/impacteffects/missileexplosionvfx").InstantiateClone("BanditReloadedThermiteBurnEffect", false);
+            GameObject thermiteBurnEffect = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/effects/impacteffects/missileexplosionvfx"), "BanditReloadedThermiteBurnEffect", false);
             thermiteBurnEffect.GetComponent<EffectComponent>().soundName = "Play_BanditReloaded_burn";
             ModContentPack.effectDefs.Add(new EffectDef(thermiteBurnEffect));
             BootlegThermiteOverlapAttack.burnEffectPrefab = thermiteBurnEffect;
@@ -912,10 +902,10 @@ namespace BanditReloaded
 
         private void SetupClusterBomb()
         {
-            ClusterBombObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/BanditClusterBombSeed"), "BanditReloadedClusterBomb", true);
+            ClusterBombObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/BanditClusterBombSeed"), "BanditReloadedClusterBomb", true);
             ModContentPack.projectilePrefabs.Add(ClusterBombObject);
 
-            ClusterBombGhostObject = Resources.Load<GameObject>(assetPrefix + ":DynamiteBundle.prefab").InstantiateClone("BanditReloadedClusterBombGhost", true);
+            ClusterBombGhostObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(ModContentPack.assets.LoadAsset<GameObject>("DynamiteBundle.prefab"), "BanditReloadedClusterBombGhost", true);
             ClusterBombGhostObject.GetComponentInChildren<MeshRenderer>().material.shader = hotpoo;
             ClusterBombGhostObject.AddComponent<ProjectileGhostController>();
 
@@ -1033,7 +1023,7 @@ namespace BanditReloaded
 
         private GameObject SetupDynamiteExplosion()
         {
-            GameObject dynamiteExplosion = Resources.Load<GameObject>("prefabs/effects/omnieffect/omniexplosionvfx").InstantiateClone("BanditReloadedDynamiteExplosion", false);
+            GameObject dynamiteExplosion = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/effects/omnieffect/omniexplosionvfx"), "BanditReloadedDynamiteExplosion", false);
             ShakeEmitter se = dynamiteExplosion.AddComponent<ShakeEmitter>();
             se.shakeOnStart = true;
             se.duration = 0.5f;
@@ -1055,10 +1045,10 @@ namespace BanditReloaded
 
         private void SetupClusterBomblet()
         {
-            ClusterBombletObject = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/BanditClusterGrenadeProjectile"), "BanditReloadedClusterBomblet", true);
+            ClusterBombletObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/projectiles/BanditClusterGrenadeProjectile"), "BanditReloadedClusterBomblet", true);
             ModContentPack.projectilePrefabs.Add(ClusterBombletObject);
 
-            ClusterBombletGhostObject = Resources.Load<GameObject>(assetPrefix + ":DynamiteStick.prefab").InstantiateClone("BanditReloadedClusterBombletGhost", true);
+            ClusterBombletGhostObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(ModContentPack.assets.LoadAsset<GameObject>("DynamiteStick.prefab"), "BanditReloadedClusterBombletGhost", true);
             ClusterBombletGhostObject.GetComponentInChildren<MeshRenderer>().material.shader = hotpoo;
             ClusterBombletGhostObject.AddComponent<ProjectileGhostController>();
 
@@ -1089,7 +1079,7 @@ namespace BanditReloaded
 
         private GameObject SetupDynamiteBombletExplosion()
         {
-            GameObject dynamiteExplosion = Resources.Load<GameObject>("prefabs/effects/impacteffects/explosionvfx").InstantiateClone("BanditReloadedDynamiteBombletExplosion", false);
+            GameObject dynamiteExplosion = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/effects/impacteffects/explosionvfx"), "BanditReloadedDynamiteBombletExplosion", false);
 
             EffectComponent ec = dynamiteExplosion.GetComponent<EffectComponent>();
             ec.soundName = "Play_engi_M2_explo";
@@ -1103,23 +1093,6 @@ namespace BanditReloaded
         {
             AncientScepter.AncientScepterItem.instance.RegisterScepterSkill(specialLightsOutScepterDef, BanditBodyName, SkillSlot.Special, 0);
             AncientScepter.AncientScepterItem.instance.RegisterScepterSkill(specialBarrageScepterDef, BanditBodyName, SkillSlot.Special, 1);
-        }
-
-        private void LoadResources()
-        {
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BanditReloaded.banditbundle"))
-            {
-                var bundle = AssetBundle.LoadFromStream(stream);
-                var provider = new R2API.AssetBundleResourcesProvider(assetPrefix, bundle);
-                R2API.ResourcesAPI.AddProvider(provider);
-            }
-
-            using (var bankStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BanditReloaded.BanditReloaded.bnk"))
-            {
-                var bytes = new byte[bankStream.Length];
-                bankStream.Read(bytes, 0, bytes.Length);
-                SoundAPI.SoundBanks.Add(bytes);
-            }
         }
 
         private void SetAttributes()
@@ -1163,7 +1136,7 @@ namespace BanditReloaded
 
         private void CreateMaster()
         {
-            BanditMonsterMaster = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/charactermasters/commandomonstermaster"), "BanditReloadedMonsterMaster", true);
+            BanditMonsterMaster = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/charactermasters/commandomonstermaster"), "BanditReloadedMonsterMaster", true);
             ModContentPack.masterPrefabs.Add(BanditMonsterMaster);
 
             CharacterMaster cm = BanditMonsterMaster.GetComponent<CharacterMaster>();
@@ -1400,13 +1373,13 @@ namespace BanditReloaded
 
         private void SetupBanditBody()
         {
-            BanditBody = PrefabAPI.InstantiateClone(Resources.Load<GameObject>("prefabs/characterbodies/bandit2body"), "BanditReloadedBody", true);
+            BanditBody = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/characterbodies/bandit2body"), "BanditReloadedBody", true);
             BanditBodyName = BanditBody.name;
 
             ModContentPack.bodyPrefabs.Add(BanditBody);
         }
 
-        private void CreateLightsOutBuff()
+        private void CreateBuffs()
         {
             BuffDef LightsOutBuffDef = BuffDef.CreateInstance<BuffDef>();
             LightsOutBuffDef.buffColor = BanditColor;
@@ -1443,15 +1416,6 @@ namespace BanditReloaded
             skullBuffDef.name = "BanditReloadedSkull";
             ModContentPack.buffDefs.Add(skullBuffDef);
             ModContentPack.skullBuff = skullBuffDef;
-
-            BuffDef cloakSpeedBuffDef = BuffDef.CreateInstance<BuffDef>();
-            cloakSpeedBuffDef.buffColor = new Color(0.376f, 0.843f, 0.898f);
-            cloakSpeedBuffDef.canStack = false;
-            cloakSpeedBuffDef.iconSprite = Resources.Load<Sprite>("Textures/BuffIcons/texMovespeedBuffIcon");
-            cloakSpeedBuffDef.isDebuff = false;
-            cloakSpeedBuffDef.name = "BanditReloadedCloakSpeed";
-            ModContentPack.buffDefs.Add(cloakSpeedBuffDef);
-            ModContentPack.cloakSpeedBuff = cloakSpeedBuffDef;
         }
     }
 }

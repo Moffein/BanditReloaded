@@ -6,6 +6,7 @@ using System.Text;
 using UnityEngine;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
+using System.Reflection;
 
 namespace BanditReloaded
 {
@@ -27,8 +28,9 @@ namespace BanditReloaded
         public static BuffDef lightsOutBuff;
         public static BuffDef thermiteBuff;
         public static BuffDef cloakDamageBuff;
-        public static BuffDef cloakSpeedBuff;
         public static BuffDef skullBuff;
+
+        public static AssetBundle assets;
 
         public static void CreateContentPack()
         {
@@ -69,6 +71,21 @@ namespace BanditReloaded
 
             c.Remove();
             c.Emit(OpCodes.Ldsfld, typeof(ContentManager).GetField(nameof(ContentManager.buffDefs)));
+        }
+
+        public static void LoadResources()
+        {
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BanditReloaded.banditbundle"))
+            {
+                assets = AssetBundle.LoadFromStream(stream);
+            }
+
+            using (var bankStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BanditReloaded.BanditReloaded.bnk"))
+            {
+                var bytes = new byte[bankStream.Length];
+                bankStream.Read(bytes, 0, bytes.Length);
+                EnigmaticThunder.Modules.Sounds.SoundBanks.Add(bytes);
+            }
         }
     }
 }

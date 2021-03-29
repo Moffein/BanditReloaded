@@ -23,10 +23,6 @@ namespace BanditReloaded.Hooks
                     int skullCount = self.GetBuffCount(ModContentPack.skullBuff);
                     self.moveSpeed *= Mathf.Max(0.1f, 1f - 0.1f * skullCount);
                 }
-                if (self.HasBuff(ModContentPack.cloakSpeedBuff))
-                {
-                    self.moveSpeed *= 1.5f;
-                }
             };
         }
     }

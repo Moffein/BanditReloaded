@@ -22,7 +22,7 @@ namespace EntityStates.BanditReloadedSkills
 		public override void FixedUpdate()
 		{
 			base.FixedUpdate();
-			if (base.fixedAge > this.duration || (base.characterBody && base.characterBody.isSprinting))
+			if (base.fixedAge > this.duration)
 			{
 				this.outer.SetNextStateToMain();
 			}

@@ -1,5 +1,4 @@
-﻿using R2API.Utils;
-using RoR2;
+﻿using RoR2;
 using RoR2.Projectile;
 using System;
 using System.Collections.Generic;
