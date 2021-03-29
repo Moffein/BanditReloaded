@@ -1132,7 +1132,7 @@ namespace BanditReloaded
             cb.levelMaxShield = 0f;
             cb.levelMoveSpeed = 0f;
             cb.levelJumpPower = 0f;
-            cb.levelDamage = cb.baseDamage * 0.2f;
+            cb.levelDamage = cb.baseDamage * 0.2f;//
             cb.levelAttackSpeed = 0f;
             cb.levelCrit = 0f;
             cb.levelArmor = 0f;
