@@ -27,7 +27,15 @@ namespace EntityStates.BanditReloadedSkills
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
 
-            base.PlayAnimation("Gesture, Additive", "FireMainWeapon", "FireMainWeapon.playbackRate", this.maxDuration);
+            if (!BanditReloaded.BanditReloaded.useOldModel)
+            {
+                base.PlayAnimation("Gesture, Additive", "FireMainWeapon", "FireMainWeapon.playbackRate", this.maxDuration);
+            }
+            else
+            {
+                base.PlayAnimation("Gesture, Additive", "FireShotgun", "FireShotgun.playbackRate", this.maxDuration * 0.8f);
+                base.PlayAnimation("Gesture, Override", "FireShotgun", "FireShotgun.playbackRate", this.maxDuration * 0.8f);
+            }
 
             string muzzleName = "MuzzleShotgun";
             if (Scatter.effectPrefab)
@@ -53,7 +61,7 @@ namespace EntityStates.BanditReloadedSkills
                     muzzleName = muzzleName,
                     hitEffectPrefab = Scatter.hitEffectPrefab,
                     isCrit = Util.CheckRoll(this.critStat, base.characterBody.master),
-                    HitEffectNormal = false,
+                    HitEffectNormal = true,
                     radius = Scatter.bulletRadius,
                     smartCollision = true,
                     maxDistance = Scatter.range,
@@ -100,9 +108,9 @@ namespace EntityStates.BanditReloadedSkills
             return InterruptPriority.PrioritySkill;
         }
 
-        public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditshotgun");
-        public static GameObject hitEffectPrefab = Resources.Load<GameObject>("prefabs/effects/impacteffects/hitspark1");
-        public static GameObject tracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracerbanditshotgun");
+        public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbandit2shotgun");
+        public static GameObject hitEffectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbandit2");
+        public static GameObject tracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracerbandit2shotgun");
         public static float damageCoefficient;
         public static float force;
         public static float bulletRadius = 0.3f;
