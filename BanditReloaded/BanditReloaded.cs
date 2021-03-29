@@ -136,7 +136,11 @@ namespace BanditReloaded
             AssignSkills();
             CreateMaster();
             CreateBuffs();
-            AddClassicSkin();
+
+            if (useOldModel)
+            {
+                AddClassicSkin();
+            }
             RegisterLanguageTokens();
 
             BanditBody.GetComponent<CharacterBody>().preferredPodPrefab = Resources.Load<GameObject>("prefabs/networkedobjects/survivorpod");
@@ -1125,6 +1129,7 @@ namespace BanditReloaded
             cb.baseCrit = 1f;
             cb.baseArmor = 0f;
             cb.baseJumpCount = 1;
+            cb.bodyColor = BanditColor;
 
             cb.autoCalculateLevelStats = true;
             cb.levelMaxHealth = cb.baseMaxHealth * 0.3f;
@@ -1429,27 +1434,65 @@ namespace BanditReloaded
 
         public static void AddClassicSkin()    //credits to rob
         {
+            GameObject bodyPrefab = BanditBody;
+            GameObject model = bodyPrefab.GetComponentInChildren<ModelLocator>().modelTransform.gameObject;
+            CharacterModel characterModel = model.GetComponent<CharacterModel>();
 
-        }
+            ModelSkinController skinController = null;
+            if (model.GetComponent<ModelSkinController>())
+                skinController = model.GetComponent<ModelSkinController>();
+            else
+                skinController = model.AddComponent<ModelSkinController>();
 
-        private static void DoNothing(On.RoR2.SkinDef.orig_Awake orig, RoR2.SkinDef self)
-        {
-        }
+            SkinnedMeshRenderer mainRenderer = characterModel.mainSkinnedMeshRenderer;
+            if (mainRenderer == null)
+            {
+                CharacterModel.RendererInfo[] bRI = characterModel.baseRendererInfos;
+                if (bRI != null)
+                {
+                    foreach (CharacterModel.RendererInfo rendererInfo in bRI)
+                    {
+                        if (rendererInfo.renderer is SkinnedMeshRenderer)
+                        {
+                            mainRenderer = (SkinnedMeshRenderer)rendererInfo.renderer;
+                            break;
+                        }
+                    }
+                    if (mainRenderer != null)
+                    {
+                        characterModel.mainSkinnedMeshRenderer = mainRenderer;
+                    }
+                }
+            }
 
-        //Taken from https://github.com/ArcPh1r3/HenryMod/blob/master/HenryMod/Modules/Skins.cs
-        internal struct SkinDefInfo
-        {
-            internal SkinDef[] BaseSkins;
-            internal Sprite Icon;
-            internal string NameToken;
-            internal UnlockableDef UnlockableDef;
-            internal GameObject RootObject;
-            internal CharacterModel.RendererInfo[] RendererInfos;
-            internal SkinDef.MeshReplacement[] MeshReplacements;
-            internal SkinDef.GameObjectActivation[] GameObjectActivations;
-            internal SkinDef.ProjectileGhostReplacement[] ProjectileGhostReplacements;
-            internal SkinDef.MinionSkinReplacement[] MinionSkinReplacements;
-            internal string Name;
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADEDBODY_DEFAULT_SKIN_NAME", "Default");
+
+            EnigmaticThunder.Modules.Loadouts.SkinDefInfo skinDefInfo = new EnigmaticThunder.Modules.Loadouts.SkinDefInfo();
+            skinDefInfo.BaseSkins = Array.Empty<SkinDef>();
+            skinDefInfo.GameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>();
+            skinDefInfo.Icon = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(new Color(143f / 255f, 132f / 255f, 106f / 255f), Color.cyan, new Color(92f / 255f, 136f / 255f, 167f / 255f), new Color(25f / 255f, 50f / 255f, 57f / 255f));
+            skinDefInfo.MeshReplacements = new SkinDef.MeshReplacement[]
+            {
+                new SkinDef.MeshReplacement
+                {
+                    renderer = mainRenderer,
+                    mesh = mainRenderer.sharedMesh
+                }
+            };
+            skinDefInfo.Name = "BANDITRELOADEDBODY_DEFAULT_SKIN_NAME";
+            skinDefInfo.NameToken = "BANDITRELOADEDBODY_DEFAULT_SKIN_NAME";
+            skinDefInfo.RendererInfos = characterModel.baseRendererInfos;
+            skinDefInfo.RootObject = model;
+            skinDefInfo.UnlockableName = "";
+            skinDefInfo.MinionSkinReplacements = new SkinDef.MinionSkinReplacement[0];
+            skinDefInfo.ProjectileGhostReplacements = new SkinDef.ProjectileGhostReplacement[0];
+
+            SkinDef defaultSkin = EnigmaticThunder.Modules.Loadouts.CreateNewSkinDef(skinDefInfo);
+
+            skinController.skins = new SkinDef[1]
+            {
+                defaultSkin,
+            };
         }
     }
 }
