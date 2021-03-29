@@ -23,6 +23,7 @@ namespace BanditReloaded
         public static List<SkillDef> skillDefs = new List<SkillDef>();
         public static List<SkillFamily> skillFamilies = new List<SkillFamily>();
         public static List<SurvivorDef> survivorDefs = new List<SurvivorDef>();
+        public static List<UnlockableDef> unlockableDefs = new List<UnlockableDef>();
 
 
         public static BuffDef lightsOutBuff;
@@ -31,6 +32,10 @@ namespace BanditReloaded
         public static BuffDef skullBuff;
 
         public static AssetBundle assets;
+
+        public static UnlockableDef masteryUnlock;
+
+        public static SurvivorDef banditReloadedSurvivor;
 
         public static void CreateContentPack()
         {
@@ -47,6 +52,7 @@ namespace BanditReloaded
                 skillDefs = skillDefs.ToArray(),
                 skillFamilies = skillFamilies.ToArray(),
                 survivorDefs = survivorDefs.ToArray(),
+                unlockableDefs = unlockableDefs.ToArray()
             };
 
             On.RoR2.ContentManager.SetContentPacks += AddContent;

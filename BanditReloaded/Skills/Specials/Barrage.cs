@@ -107,6 +107,19 @@ namespace EntityStates.BanditReloadedSkills
         {
             BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
             base.characterBody.SetSpreadBloom(0f, false);
+            if (earlyExit)
+            {
+                if (this.animator)
+                {
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
+                }
+                base.PlayAnimation("Gesture, Additive", "SideToMain");
+                Transform transform = base.FindModelChild("SpinningPistolFX");
+                if (transform)
+                {
+                    transform.gameObject.SetActive(false);
+                }
+            }
             base.OnExit();
         }
 
@@ -168,6 +181,7 @@ namespace EntityStates.BanditReloadedSkills
                     {
                         transform.gameObject.SetActive(false);
                     }
+                    earlyExit = false;
                     this.outer.SetNextState(new ExitRevolver());
                     return;
                 }
@@ -202,5 +216,6 @@ namespace EntityStates.BanditReloadedSkills
         private float recoil;
         private Animator animator;
         private int bodySideWeaponLayerIndex;
+        private bool earlyExit = true;
     }
 }

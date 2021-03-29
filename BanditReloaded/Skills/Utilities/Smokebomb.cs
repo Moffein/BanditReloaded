@@ -124,7 +124,7 @@ namespace EntityStates.BanditReloadedSkills
                 }.Fire();
             }
 
-            if (base.characterMotor)
+            if (base.isAuthority && base.characterMotor && !base.characterMotor.isGrounded)
             {
                 base.characterMotor.velocity = new Vector3(base.characterMotor.velocity.x, 17f, base.characterMotor.velocity.z);
             }
@@ -134,7 +134,7 @@ namespace EntityStates.BanditReloadedSkills
         {
             if (this.stopwatch <= CastSmokescreenNoDelay.minimumStateDuration)
             {
-                return InterruptPriority.PrioritySkill;
+                return InterruptPriority.Pain;
             }
             return InterruptPriority.Any;
         }

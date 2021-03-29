@@ -142,7 +142,7 @@ namespace BanditReloaded.Hooks
                         {
                             if (resetCooldownsOnKill)
                             {
-                                pd.damage *= 3f;
+                                pd.damage *= 2f;
 
                                 BanditNetworkCommands bnc = damageInfo.attacker.GetComponent<BanditNetworkCommands>();
                                 if (bnc)
