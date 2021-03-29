@@ -26,7 +26,7 @@ namespace BanditReloaded
     class BanditReloaded : BaseUnityPlugin
     {
         #region cfg
-        bool useAltCrosshair;
+        public static bool useOldModel;
 
         int blastStock;
 
@@ -80,6 +80,7 @@ namespace BanditReloaded
 
         public void RegisterLanguageTokens()
         {
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADEDBODY_DEFAULT_SKIN_NAME", "Default");
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PASSIVE_NAME", "Quickdraw");
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PASSIVE_DESCRIPTION", "The Bandit <style=cIsUtility>instantly reloads</style> his primary when using other skills.");
 
@@ -96,7 +97,7 @@ namespace BanditReloaded
             BanditDesc += "< ! > Dealing a killing blow with Lights Out allows you to chain many skills together, allowing for maximum damage AND safety." + Environment.NewLine + Environment.NewLine;
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_BODY_DESC", BanditDesc);
 
-            EnigmaticThunder.Modules.Languages.Add("KEYWORD_BANDITRELOADED_EXECUTE", "<style=cKeywordName>Executing</style><style=cSub>The ability <style=cIsHealth>instantly kills</style> enemies below <style=cIsHealth>"+TakeDamage.specialExecuteThreshold.ToString("P0").Replace(" ", "").Replace(",", "") + " HP</style>.</style>");
+            EnigmaticThunder.Modules.Languages.Add("KEYWORD_BANDITRELOADED_EXECUTE", "<style=cKeywordName>Executing</style><style=cSub>The ability <style=cIsHealth>instantly kills</style> enemies below <style=cIsHealth>" + TakeDamage.specialExecuteThreshold.ToString("P0").Replace(" ", "").Replace(",", "") + " HP</style>.</style>");
             EnigmaticThunder.Modules.Languages.Add("KEYWORD_BANDITRELOADED_RAPIDFIRE", "<style=cKeywordName>Rapid-Fire</style><style=cSub>The skill fires faster if you click faster.</style>");
             EnigmaticThunder.Modules.Languages.Add("KEYWORD_BANDITRELOADED_THERMITE", "<style=cKeywordName>Thermite</style><style=cSub>Reduce movement speed by <style=cIsDamage>15%</style> per stack. Reduce armor by <style=cIsDamage>2.5</style> per stack.</style>");
 
@@ -135,11 +136,19 @@ namespace BanditReloaded
             AssignSkills();
             CreateMaster();
             CreateBuffs();
-
+            AddClassicSkin();
             RegisterLanguageTokens();
 
             BanditBody.GetComponent<CharacterBody>().preferredPodPrefab = Resources.Load<GameObject>("prefabs/networkedobjects/survivorpod");
-            GameObject banditDisplay = Resources.Load<GameObject>("Prefabs/CharacterDisplays/Bandit2Display");
+            GameObject banditDisplay;
+            if (!useOldModel)
+            {
+                banditDisplay = Resources.Load<GameObject>("Prefabs/CharacterDisplays/Bandit2Display");
+            }
+            else
+            {
+                banditDisplay = Resources.Load<GameObject>("Prefabs/CharacterBodies/BanditBody").GetComponent<ModelLocator>().modelTransform.gameObject;
+            }
             item = SurvivorDef.CreateInstance<SurvivorDef>();
             item.cachedName = "BanditReloaded";
             item.bodyPrefab = BanditBody;
@@ -169,7 +178,7 @@ namespace BanditReloaded
 
         private void ReadConfig()
         {
-            useAltCrosshair = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Alt Crosshair"), true, new ConfigDescription("Uses the unused Bandit-specific crosshair.")).Value;
+            useOldModel = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Old Model (EVERYONE NEEDS SAME SETTING)"), false, new ConfigDescription(" Uses the Bandit model from Risk of Rain 2 alpha.")).Value;
             asEnabled = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Enable unused Assassinate utility*"), false, new ConfigDescription("Enables the Assassinate Utility skill. This skill was disabled due to being poorly coded and not fitting Bandit's kit, but it's left in in case you want to use it. This skill can only be used if Assassinate is enabled on the host.")).Value;
 
             string blastSound = base.Config.Bind<string>(new ConfigDefinition("10 - Primary - Blast", "Firing Sound"), "vanilla", new ConfigDescription("Which sound Blast plays when firing. Accepted values are 'new', 'classic', and 'vanilla'.")).Value;
@@ -546,7 +555,7 @@ namespace BanditReloaded
             acidBombDef.baseRechargeInterval = acidCooldown;
             acidBombDef.skillNameToken = "BANDITRELOADED_SECONDARY_ALT2_NAME";
             acidBombDef.skillDescriptionToken = "Toss a grenade that <style=cIsHealing>Weakens</style> for <style=cIsDamage>" + (AcidBomb.damageCoefficient).ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>."
-                + " Leaves acid that deals <style=cIsDamage>"+AcidBomb.acidDamageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "" )+ " damage per second</style>.";
+                + " Leaves acid that deals <style=cIsDamage>" + AcidBomb.acidDamageCoefficient.ToString("P0").Replace(" ", "").Replace(",", "") + " damage per second</style>.";
             acidBombDef.skillDescriptionToken += Environment.NewLine;
             acidBombDef.skillName = "AcidGrenade";
             acidBombDef.icon = ModContentPack.assets.LoadAsset<Sprite>("skill2a.png");
@@ -564,14 +573,14 @@ namespace BanditReloaded
             acidBombDef.keywordTokens = new string[] { "KEYWORD_WEAK" };
             ModContentPack.skillDefs.Add(acidBombDef);
             #endregion
-            
+
             #region Cluster Bomb
             clusterBombDef = SkillDef.CreateInstance<SkillDef>();
             clusterBombDef.activationState = new SerializableEntityStateType(typeof(ClusterBomb));
             clusterBombDef.baseRechargeInterval = cbCooldown;
             clusterBombDef.skillNameToken = "BANDITRELOADED_SECONDARY_NAME";
             clusterBombDef.skillDescriptionToken = "Toss a bomb that <style=cIsDamage>ignites</style> for <style=cIsDamage>" + (ClusterBomb.damageCoefficient).ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>."
-                +" Drops bomblets for <style=cIsDamage>" + cbBombletCount + "x" + (ClusterBomb.bombletDamageCoefficient).ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>."
+                + " Drops bomblets for <style=cIsDamage>" + cbBombletCount + "x" + (ClusterBomb.bombletDamageCoefficient).ToString("P0").Replace(" ", "").Replace(",", "") + " damage</style>."
                 + " Can be shot midair for <style=cIsDamage>bonus damage</style>.";
             clusterBombDef.skillDescriptionToken += Environment.NewLine;
             clusterBombDef.skillName = "Dynamite";
@@ -587,10 +596,10 @@ namespace BanditReloaded
             clusterBombDef.mustKeyPress = false;
             clusterBombDef.requiredStock = 1;
             clusterBombDef.stockToConsume = 1;
-            clusterBombDef.keywordTokens = new string[] {};
+            clusterBombDef.keywordTokens = new string[] { };
             ModContentPack.skillDefs.Add(clusterBombDef);
             #endregion
-            
+
             #region barrage
             specialBarrageDef = SkillDef.CreateInstance<SkillDef>();
             specialBarrageDef.activationState = new SerializableEntityStateType(typeof(PrepBarrage));
@@ -776,7 +785,7 @@ namespace BanditReloaded
 
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.DestroyedClone.AncientScepter"))
             {
-               SetupScepter();
+                SetupScepter();
             }
 
             ModContentPack.entityStates.Add(typeof(Blast));
@@ -853,7 +862,7 @@ namespace BanditReloaded
             ThermiteObject.GetComponent<ProjectileController>().ghostPrefab = ThermiteGhostObject;
 
             ProjectileImpactExplosion tPIE = ThermiteObject.GetComponent<ProjectileImpactExplosion>();
-            tPIE.blastRadius = thermiteRadius/2f;
+            tPIE.blastRadius = thermiteRadius / 2f;
             tPIE.blastProcCoefficient = 1f;
             tPIE.blastDamageCoefficient = 1f;
             tPIE.falloffModel = BlastAttack.FalloffModel.None;
@@ -1129,10 +1138,7 @@ namespace BanditReloaded
             cb.levelArmor = 0f;
 
             cb.hideCrosshair = false;
-            if (useAltCrosshair)
-            {
-                cb.crosshairPrefab = Resources.Load<GameObject>("prefabs/crosshair/banditcrosshair");
-            }
+            cb.crosshairPrefab = Resources.Load<GameObject>("prefabs/crosshair/banditcrosshair");
             BanditBody.AddComponent<BanditCrosshairComponent>();
             BanditBody.AddComponent<BanditNetworkCommands>();
         }
@@ -1376,7 +1382,7 @@ namespace BanditReloaded
 
         private void SetupBanditBody()
         {
-            BanditBody = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/characterbodies/bandit2body"), "BanditReloadedBody", true);
+            BanditBody = EnigmaticThunder.Modules.Prefabs.InstantiateClone(useOldModel ? Resources.Load<GameObject>("prefabs/characterbodies/banditbody") : Resources.Load<GameObject>("prefabs/characterbodies/bandit2body"), "BanditReloadedBody", true);
             BanditBodyName = BanditBody.name;
 
             ModContentPack.bodyPrefabs.Add(BanditBody);
@@ -1419,6 +1425,31 @@ namespace BanditReloaded
             skullBuffDef.name = "BanditReloadedSkull";
             ModContentPack.buffDefs.Add(skullBuffDef);
             ModContentPack.skullBuff = skullBuffDef;
+        }
+
+        public static void AddClassicSkin()    //credits to rob
+        {
+
+        }
+
+        private static void DoNothing(On.RoR2.SkinDef.orig_Awake orig, RoR2.SkinDef self)
+        {
+        }
+
+        //Taken from https://github.com/ArcPh1r3/HenryMod/blob/master/HenryMod/Modules/Skins.cs
+        internal struct SkinDefInfo
+        {
+            internal SkinDef[] BaseSkins;
+            internal Sprite Icon;
+            internal string NameToken;
+            internal UnlockableDef UnlockableDef;
+            internal GameObject RootObject;
+            internal CharacterModel.RendererInfo[] RendererInfos;
+            internal SkinDef.MeshReplacement[] MeshReplacements;
+            internal SkinDef.GameObjectActivation[] GameObjectActivations;
+            internal SkinDef.ProjectileGhostReplacement[] ProjectileGhostReplacements;
+            internal SkinDef.MinionSkinReplacement[] MinionSkinReplacements;
+            internal string Name;
         }
     }
 }
