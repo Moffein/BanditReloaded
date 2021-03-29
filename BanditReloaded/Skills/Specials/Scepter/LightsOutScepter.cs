@@ -15,20 +15,13 @@ namespace EntityStates.BanditReloadedSkills
             this.duration = PrepLightsOutScepter.baseDuration / this.attackSpeedStat;
             
             this.animator = base.GetModelAnimator();
-            if (!BanditReloaded.BanditReloaded.useOldModel)
+            if (this.animator)
             {
-                if (this.animator)
-                {
-                    this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
-                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
-                }
-                base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration);
+                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
             }
-            else
-            {
-                base.PlayAnimation("Gesture, Additive", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
-                base.PlayAnimation("Gesture, Override", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
-            }
+
+            base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration);
             Util.PlaySound(PrepLightsOutScepter.prepSoundString, base.gameObject);
             this.defaultCrosshairPrefab = base.characterBody.crosshairPrefab;
             base.characterBody.crosshairPrefab = PrepLightsOutScepter.specialCrosshairPrefab;
@@ -59,17 +52,14 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnExit()
         {
             base.characterBody.crosshairPrefab = this.defaultCrosshairPrefab;
-            if (!BanditReloaded.BanditReloaded.useOldModel)
+            if (this.animator)
             {
-                if (this.animator)
-                {
-                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
-                }
-                Transform transform = base.FindModelChild("SpinningPistolFX");
-                if (transform)
-                {
-                    transform.gameObject.SetActive(false);
-                }
+                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
+            }
+            Transform transform = base.FindModelChild("SpinningPistolFX");
+            if (transform)
+            {
+                transform.gameObject.SetActive(false);
             }
             base.OnExit();
         }
@@ -100,20 +90,13 @@ namespace EntityStates.BanditReloadedSkills
             Util.PlaySound(FireLightsOutScepter.attackSoundString, base.gameObject);
 
             this.animator = base.GetModelAnimator();
-            if (!BanditReloaded.BanditReloaded.useOldModel)
+            if (this.animator)
             {
-                if (this.animator)
-                {
-                    this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
-                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
-                }
-                base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", 1f);
+                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
             }
-            else
-            {
-                base.PlayAnimation("Gesture, Additive", "FireRevolver");
-                base.PlayAnimation("Gesture, Override", "FireRevolver");
-            }
+            base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", 1f);
+
             if (FireLightsOutScepter.effectPrefab)
             {
                 EffectManager.SimpleMuzzleFlash(FireLightsOutScepter.effectPrefab, base.gameObject, muzzleName, false);
@@ -148,7 +131,7 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnExit()
         {
             BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
-            if (earlyExit && !BanditReloaded.BanditReloaded.useOldModel)
+            if (earlyExit)
             {
                 if (this.animator)
                 {
@@ -188,9 +171,9 @@ namespace EntityStates.BanditReloadedSkills
             return InterruptPriority.PrioritySkill;
         }
 
-        public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbandit2");
-        public static GameObject hitEffectPrefab = Resources.Load<GameObject>("prefabs/effects/impacteffects/hitsparkbandit2pistol");
-        public static GameObject tracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracerbandit2rifle");
+        public static GameObject effectPrefab = Resources.Load<GameObject>("prefabs/effects/muzzleflashes/muzzleflashbanditpistol");
+        public static GameObject hitEffectPrefab = Resources.Load<GameObject>("prefabs/effects/impacteffects/hitsparkbanditpistol");
+        public static GameObject tracerEffectPrefab = Resources.Load<GameObject>("prefabs/effects/tracers/tracerbanditpistol");
         public static float damageCoefficient;
         public static float force;
         public static float baseDuration;

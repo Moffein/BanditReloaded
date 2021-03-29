@@ -16,14 +16,7 @@ namespace EntityStates.BanditReloadedSkills
             this.duration = AcidBomb.baseDuration / this.attackSpeedStat;
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
-            if (!BanditReloaded.BanditReloaded.useOldModel)
-            {
-                base.PlayAnimation("Gesture, Additive", "SlashBlade", "SlashBlade.playbackRate", this.duration);
-            }
-            else
-            {
-                base.PlayAnimation("Gesture", "FireRevolver", "FireRevolver.playbackRate", this.duration);
-            }
+            base.PlayAnimation("Gesture, Additive", "SlashBlade", "SlashBlade.playbackRate", this.duration);
             Util.PlaySound("Play_commando_M2_grenade_throw", base.gameObject);
             if (base.isAuthority)
             {

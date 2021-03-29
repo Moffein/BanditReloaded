@@ -26,7 +26,7 @@ namespace BanditReloaded
     class BanditReloaded : BaseUnityPlugin
     {
         #region cfg
-        public static bool useOldModel;
+        bool useAltCrosshair;
 
         int blastStock;
 
@@ -80,7 +80,6 @@ namespace BanditReloaded
 
         public void RegisterLanguageTokens()
         {
-            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADEDBODY_DEFAULT_SKIN_NAME", "Default");
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PASSIVE_NAME", "Quickdraw");
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PASSIVE_DESCRIPTION", "The Bandit <style=cIsUtility>instantly reloads</style> his primary when using other skills.");
 
@@ -136,19 +135,11 @@ namespace BanditReloaded
             AssignSkills();
             CreateMaster();
             CreateBuffs();
-            AddClassicSkin();
+
             RegisterLanguageTokens();
 
             BanditBody.GetComponent<CharacterBody>().preferredPodPrefab = Resources.Load<GameObject>("prefabs/networkedobjects/survivorpod");
-            GameObject banditDisplay;
-            if (!useOldModel)
-            {
-                banditDisplay = Resources.Load<GameObject>("Prefabs/CharacterDisplays/Bandit2Display");
-            }
-            else
-            {
-                banditDisplay = Resources.Load<GameObject>("Prefabs/CharacterBodies/BanditBody").GetComponent<ModelLocator>().modelTransform.gameObject;
-            }
+            GameObject banditDisplay = Resources.Load<GameObject>("Prefabs/CharacterDisplays/Bandit2Display");
             item = SurvivorDef.CreateInstance<SurvivorDef>();
             item.cachedName = "BanditReloaded";
             item.bodyPrefab = BanditBody;
@@ -178,7 +169,7 @@ namespace BanditReloaded
 
         private void ReadConfig()
         {
-            useOldModel = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Old Model (EVERYONE NEEDS SAME SETTING)"), false, new ConfigDescription(" Uses the Bandit model from Risk of Rain 2 alpha.")).Value;
+            useAltCrosshair = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Alt Crosshair"), true, new ConfigDescription("Uses the unused Bandit-specific crosshair.")).Value;
             asEnabled = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Enable unused Assassinate utility*"), false, new ConfigDescription("Enables the Assassinate Utility skill. This skill was disabled due to being poorly coded and not fitting Bandit's kit, but it's left in in case you want to use it. This skill can only be used if Assassinate is enabled on the host.")).Value;
 
             string blastSound = base.Config.Bind<string>(new ConfigDefinition("10 - Primary - Blast", "Firing Sound"), "vanilla", new ConfigDescription("Which sound Blast plays when firing. Accepted values are 'new', 'classic', and 'vanilla'.")).Value;
@@ -1138,7 +1129,10 @@ namespace BanditReloaded
             cb.levelArmor = 0f;
 
             cb.hideCrosshair = false;
-            cb.crosshairPrefab = Resources.Load<GameObject>("prefabs/crosshair/banditcrosshair");
+            if (useAltCrosshair)
+            {
+                cb.crosshairPrefab = Resources.Load<GameObject>("prefabs/crosshair/banditcrosshair");
+            }
             BanditBody.AddComponent<BanditCrosshairComponent>();
             BanditBody.AddComponent<BanditNetworkCommands>();
         }
@@ -1382,7 +1376,7 @@ namespace BanditReloaded
 
         private void SetupBanditBody()
         {
-            BanditBody = EnigmaticThunder.Modules.Prefabs.InstantiateClone(useOldModel ? Resources.Load<GameObject>("prefabs/characterbodies/banditbody") : Resources.Load<GameObject>("prefabs/characterbodies/bandit2body"), "BanditReloadedBody", true);
+            BanditBody = EnigmaticThunder.Modules.Prefabs.InstantiateClone(Resources.Load<GameObject>("prefabs/characterbodies/bandit2body"), "BanditReloadedBody", true);
             BanditBodyName = BanditBody.name;
 
             ModContentPack.bodyPrefabs.Add(BanditBody);
@@ -1425,31 +1419,6 @@ namespace BanditReloaded
             skullBuffDef.name = "BanditReloadedSkull";
             ModContentPack.buffDefs.Add(skullBuffDef);
             ModContentPack.skullBuff = skullBuffDef;
-        }
-
-        public static void AddClassicSkin()    //credits to rob
-        {
-            
-        }
-
-        private static void DoNothing(On.RoR2.SkinDef.orig_Awake orig, RoR2.SkinDef self)
-        {
-        }
-
-        //Taken from https://github.com/ArcPh1r3/HenryMod/blob/master/HenryMod/Modules/Skins.cs
-        internal struct SkinDefInfo
-        {
-            internal SkinDef[] BaseSkins;
-            internal Sprite Icon;
-            internal string NameToken;
-            internal UnlockableDef UnlockableDef;
-            internal GameObject RootObject;
-            internal CharacterModel.RendererInfo[] RendererInfos;
-            internal SkinDef.MeshReplacement[] MeshReplacements;
-            internal SkinDef.GameObjectActivation[] GameObjectActivations;
-            internal SkinDef.ProjectileGhostReplacement[] ProjectileGhostReplacements;
-            internal SkinDef.MinionSkinReplacement[] MinionSkinReplacements;
-            internal string Name;
         }
     }
 }
