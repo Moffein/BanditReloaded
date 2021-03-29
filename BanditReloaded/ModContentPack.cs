@@ -39,8 +39,6 @@ namespace BanditReloaded
 
         public static void CreateContentPack()
         {
-            IL.RoR2.BuffCatalog.Init += FixBuffCatalog;
-
             contentPack = new ContentPack()
             {
                 bodyPrefabs = bodyPrefabs.ToArray(),
@@ -62,21 +60,6 @@ namespace BanditReloaded
         {
             newContentPacks.Add(contentPack);
             orig(newContentPacks);
-        }
-
-        //Credits to Aaron (Windows10CE#8553). Remove this once API updates.
-        internal static void FixBuffCatalog(ILContext il)
-        {
-            ILCursor c = new ILCursor(il);
-
-            if (!c.Next.MatchLdsfld(typeof(RoR2Content.Buffs), nameof(RoR2Content.Buffs.buffDefs)))
-            {
-                Debug.Log("Buff Catalog is already fixed!");
-                return;
-            }
-
-            c.Remove();
-            c.Emit(OpCodes.Ldsfld, typeof(ContentManager).GetField(nameof(ContentManager.buffDefs)));
         }
 
         public static void LoadResources()
