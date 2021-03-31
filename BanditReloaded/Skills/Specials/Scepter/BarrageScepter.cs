@@ -15,12 +15,20 @@ namespace EntityStates.BanditReloadedSkills
             this.duration = PrepBarrageScepter.baseDuration / this.attackSpeedStat;
 
             this.animator = base.GetModelAnimator();
-            if (this.animator)
+            if (BanditReloaded.BanditReloaded.useOldModel)
             {
-                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
-                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+                base.PlayAnimation("Gesture, Additive", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
+                base.PlayAnimation("Gesture, Override", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
             }
-            base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration);
+            else
+            {
+                if (this.animator)
+                {
+                    this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+                }
+                base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration);
+            }
 
             Util.PlaySound(PrepBarrageScepter.prepSoundString, base.gameObject);
 
@@ -54,14 +62,17 @@ namespace EntityStates.BanditReloadedSkills
 
         public override void OnExit()
         {
-            if (this.animator)
+            if (!BanditReloaded.BanditReloaded.useOldModel)
             {
-                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
-            }
-            Transform transform = base.FindModelChild("SpinningPistolFX");
-            if (transform)
-            {
-                transform.gameObject.SetActive(false);
+                if (this.animator)
+                {
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
+                }
+                Transform transform = base.FindModelChild("SpinningPistolFX");
+                if (transform)
+                {
+                    transform.gameObject.SetActive(false);
+                }
             }
             base.OnExit();
         }
@@ -92,7 +103,7 @@ namespace EntityStates.BanditReloadedSkills
             isCrit = base.RollCrit();
 
             this.animator = base.GetModelAnimator();
-            if (this.animator)
+            if (this.animator && !BanditReloaded.BanditReloaded.useOldModel)
             {
                 this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
                 this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
@@ -103,7 +114,7 @@ namespace EntityStates.BanditReloadedSkills
         {
             BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
             base.characterBody.SetSpreadBloom(0f, false);
-            if (earlyExit)
+            if (earlyExit && !BanditReloaded.BanditReloaded.useOldModel)
             {
                 if (this.animator)
                 {
@@ -133,7 +144,15 @@ namespace EntityStates.BanditReloadedSkills
                     Ray aimRay = base.GetAimRay();
                     muzzleName = "MuzzlePistol";
                     Util.PlaySound(FireBarrageScepter.attackSoundString, base.gameObject);
-                    base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", 0.5f);
+                    if (BanditReloaded.BanditReloaded.useOldModel)
+                    {
+                        base.PlayAnimation("Gesture, Additive", "FireRevolver");
+                        base.PlayAnimation("Gesture, Override", "FireRevolver");
+                    }
+                    else
+                    {
+                        base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", 0.5f);
+                    }
                     if (FireBarrageScepter.effectPrefab)
                     {
                         EffectManager.SimpleMuzzleFlash(FireBarrageScepter.effectPrefab, base.gameObject, muzzleName, false);

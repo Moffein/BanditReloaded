@@ -10,6 +10,11 @@ namespace EntityStates.BanditReloadedSkills
 		public override void OnEnter()
 		{
 			base.OnEnter();
+			if (BanditReloaded.BanditReloaded.useOldModel)
+            {
+				this.outer.SetNextStateToMain();
+				return;
+            }
 			this.animator = base.GetModelAnimator();
 			this.duration = this.baseDuration / this.attackSpeedStat;
 			if (this.animator)

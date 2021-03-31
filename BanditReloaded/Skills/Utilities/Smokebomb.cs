@@ -32,7 +32,10 @@ namespace EntityStates.BanditReloadedSkills
 
             if (base.characterMotor && !base.characterMotor.isGrounded)
             {
-                base.PlayAnimation("Gesture, Additive", "ThrowSmokebomb", "ThrowSmokebomb.playbackRate", 0.2f);
+                if (!BanditReloaded.BanditReloaded.useOldModel)
+                {
+                    base.PlayAnimation("Gesture, Additive", "ThrowSmokebomb", "ThrowSmokebomb.playbackRate", 0.2f);
+                }
             }
         }
 

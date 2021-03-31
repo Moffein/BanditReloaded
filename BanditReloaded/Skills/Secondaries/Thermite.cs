@@ -17,15 +17,23 @@ namespace EntityStates.BanditReloadedSkills
             this.duration = ThermiteBomb.baseDuration / this.attackSpeedStat;
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
-            Util.PlaySound("Play_BanditReloaded_flare", base.gameObject);
+            Util.PlaySound("Play_Bandit_m2_shot", base.gameObject);
 
             this.animator = base.GetModelAnimator();
-            if (this.animator)
+            if (BanditReloaded.BanditReloaded.useOldModel)
             {
-                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
-                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+                base.PlayAnimation("Gesture, Additive", "PrepRevolver", "PrepRevolver.playbackRate", this.duration * 0.5f);
+                base.PlayAnimation("Gesture, Override", "PrepRevolver", "PrepRevolver.playbackRate", this.duration * 0.5f);
             }
-            base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration * 0.5f);
+            else
+            {
+                if (this.animator)
+                {
+                    this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+                }
+                base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration * 0.5f);
+            }
 
             if (ThermiteBomb.effectPrefab)
             {
@@ -58,7 +66,14 @@ namespace EntityStates.BanditReloadedSkills
             if (!playedAnim && base.fixedAge > this.duration*0.5f)
             {
                 playedAnim = true;
-                base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", this.duration);
+                if (!BanditReloaded.BanditReloaded.useOldModel)
+                {
+                    base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", this.duration);
+                }
+                else
+                {
+                    base.PlayAnimation("Gesture", "FireRevolver", "FireRevolver.playbackRate", this.duration);
+                }
             }
 
             if (base.fixedAge >= this.duration && base.isAuthority)

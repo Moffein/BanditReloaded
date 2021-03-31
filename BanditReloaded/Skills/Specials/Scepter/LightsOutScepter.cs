@@ -13,12 +13,20 @@ namespace EntityStates.BanditReloadedSkills
         {
             base.OnEnter();
             this.duration = PrepLightsOutScepter.baseDuration / this.attackSpeedStat;
-            
-            this.animator = base.GetModelAnimator();
-            if (this.animator)
+
+            if (BanditReloaded.BanditReloaded.useOldModel)
             {
-                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
-                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+                base.PlayAnimation("Gesture, Additive", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
+                base.PlayAnimation("Gesture, Override", "PrepRevolver", "PrepRevolver.playbackRate", this.duration);
+            }
+            else
+            {
+                if (this.animator)
+                {
+                    this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+                }
+                base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration);
             }
 
             base.PlayAnimation("Gesture, Additive", "MainToSide", "MainToSide.playbackRate", this.duration);
@@ -52,14 +60,17 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnExit()
         {
             base.characterBody.crosshairPrefab = this.defaultCrosshairPrefab;
-            if (this.animator)
+            if (!BanditReloaded.BanditReloaded.useOldModel)
             {
-                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
-            }
-            Transform transform = base.FindModelChild("SpinningPistolFX");
-            if (transform)
-            {
-                transform.gameObject.SetActive(false);
+                if (this.animator)
+                {
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
+                }
+                Transform transform = base.FindModelChild("SpinningPistolFX");
+                if (transform)
+                {
+                    transform.gameObject.SetActive(false);
+                }
             }
             base.OnExit();
         }
@@ -90,12 +101,20 @@ namespace EntityStates.BanditReloadedSkills
             Util.PlaySound(FireLightsOutScepter.attackSoundString, base.gameObject);
 
             this.animator = base.GetModelAnimator();
-            if (this.animator)
+            if (BanditReloaded.BanditReloaded.useOldModel)
             {
-                this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
-                this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+                base.PlayAnimation("Gesture, Additive", "FireRevolver");
+                base.PlayAnimation("Gesture, Override", "FireRevolver");
             }
-            base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", 1f);
+            else
+            {
+                if (this.animator)
+                {
+                    this.bodySideWeaponLayerIndex = this.animator.GetLayerIndex("Body, SideWeapon");
+                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 1f);
+                }
+                base.PlayAnimation("Gesture, Additive", "FireSideWeapon", "FireSideWeapon.playbackRate", 1f);
+            }
 
             if (FireLightsOutScepter.effectPrefab)
             {
@@ -131,7 +150,7 @@ namespace EntityStates.BanditReloadedSkills
         public override void OnExit()
         {
             BanditHelpers.ConsumeCloakDamageBuff(base.characterBody);
-            if (earlyExit)
+            if (earlyExit && !BanditReloaded.BanditReloaded.useOldModel)
             {
                 if (this.animator)
                 {
@@ -152,14 +171,17 @@ namespace EntityStates.BanditReloadedSkills
             base.FixedUpdate();
             if (base.fixedAge >= this.duration && base.isAuthority)
             {
-                if (this.animator)
+                if (!BanditReloaded.BanditReloaded.useOldModel)
                 {
-                    this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
-                }
-                Transform transform = base.FindModelChild("SpinningPistolFX");
-                if (transform)
-                {
-                    transform.gameObject.SetActive(false);
+                    if (this.animator)
+                    {
+                        this.animator.SetLayerWeight(this.bodySideWeaponLayerIndex, 0f);
+                    }
+                    Transform transform = base.FindModelChild("SpinningPistolFX");
+                    if (transform)
+                    {
+                        transform.gameObject.SetActive(false);
+                    }
                 }
                 earlyExit = false;
                 this.outer.SetNextState(new ExitRevolver());

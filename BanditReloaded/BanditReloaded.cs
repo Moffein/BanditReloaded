@@ -16,6 +16,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 using EnigmaticThunder;
+using System.Collections;
 
 namespace BanditReloaded
 {
@@ -143,6 +144,7 @@ namespace BanditReloaded
 
             if (useOldModel)
             {
+                //BanditBody.AddComponent<ClassicMenuAnimComponent>();  //seems to be broken
                 AddClassicSkin();
                 On.RoR2.CameraRigController.OnEnable += (orig, self) =>
                 {
@@ -153,6 +155,7 @@ namespace BanditReloaded
                     }
                     orig(self);
                 };
+                base.StartCoroutine(this.FixIce());
             }
             else
             {
@@ -190,7 +193,7 @@ namespace BanditReloaded
 
         private void ReadConfig()
         {
-            useOldModel = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Old Model (EVERYONE NEEDS SAME SETTING)"), false, new ConfigDescription(" Uses the Bandit model from Risk of Rain 2 alpha.")).Value;
+            useOldModel = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Use Old Model (EVERYONE NEEDS SAME SETTING)"), true, new ConfigDescription(" Uses the Bandit model from Risk of Rain 2 alpha.")).Value;
             asEnabled = base.Config.Bind<bool>(new ConfigDefinition("01 - General Settings", "Enable unused Assassinate utility*"), false, new ConfigDescription("Enables the Assassinate Utility skill. This skill was disabled due to being poorly coded and not fitting Bandit's kit, but it's left in in case you want to use it. This skill can only be used if Assassinate is enabled on the host.")).Value;
 
             string blastSound = base.Config.Bind<string>(new ConfigDefinition("10 - Primary - Blast", "Firing Sound"), "vanilla", new ConfigDescription("Which sound Blast plays when firing. Accepted values are 'new', 'classic', and 'vanilla'.")).Value;
@@ -1122,7 +1125,7 @@ namespace BanditReloaded
         {
             BanditBody.tag = "Player";
             CharacterBody cb = BanditBody.GetComponent<CharacterBody>();
-            //cb.portraitIcon = Resources.Load<GameObject>("prefabs/characterbodies/banditbody").GetComponent<CharacterBody>().portraitIcon;
+            cb.portraitIcon = ModContentPack.assets.LoadAsset<Texture>("texBanditIcon.png");
             cb.subtitleNameToken = "BANDITRELOADED_BODY_SUBTITLE";
             cb.baseNameToken = "BANDITRELOADED_BODY_NAME";
             cb.bodyFlags = CharacterBody.BodyFlags.ImmuneToExecutes;
@@ -1501,6 +1504,20 @@ namespace BanditReloaded
             {
                 defaultSkin,
             };
+        }
+
+        private IEnumerator FixIce()
+        {
+            for (; ; )
+            {
+                if (BanditBody != null && BanditBody.GetComponent<SetStateOnHurt>() != null && BanditBody.GetComponent<SetStateOnHurt>().idleStateMachine != null && BanditBody.GetComponent<SetStateOnHurt>().idleStateMachine.Length != 0)
+                {
+                    BanditBody.GetComponent<SetStateOnHurt>().idleStateMachine[0] = BanditBody.GetComponent<SetStateOnHurt>().idleStateMachine[1];
+                    yield return null;
+                }
+                yield return new WaitForFixedUpdate();
+            }
+            yield break;
         }
     }
 }
