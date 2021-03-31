@@ -16,13 +16,12 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 using EnigmaticThunder;
-using EntityStates.Treebot.UnlockInteractable;
 
 namespace BanditReloaded
 {
     [BepInDependency("com.EnigmaDev.EnigmaticThunder")]
     [BepInDependency("com.DestroyedClone.AncientScepter", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("com.Moffein.BanditReloaded_v4", "Bandit Reloaded v4 beta 1", "4.0.0")]
+    [BepInPlugin("com.Moffein.BanditReloaded_v4", "Bandit Reloaded v4", "4.0.0")]
     class BanditReloaded : BaseUnityPlugin
     {
         #region cfg
@@ -124,6 +123,11 @@ namespace BanditReloaded
             CastSmokescreenNoDelay.destealthMaterial = EntityStates.Commando.CommandoWeapon.CastSmokescreenNoDelay.destealthMaterial;
             Assassinate.chargeupVfxPrefab = EntityStates.Toolbot.ChargeSpear.chargeupVfxPrefab;
             Assassinate.holdChargeVfxPrefab = EntityStates.Toolbot.ChargeSpear.holdChargeVfxPrefab;
+
+            if (useOldModel)
+            {
+                DisplaySetup.DisplayRules(BanditBody);
+            }
         }
 
         public void Awake()
@@ -140,6 +144,19 @@ namespace BanditReloaded
             if (useOldModel)
             {
                 AddClassicSkin();
+                On.RoR2.CameraRigController.OnEnable += (orig, self) =>
+                {
+                    SceneDef sd = RoR2.SceneCatalog.GetSceneDefForCurrentScene();
+                    if (sd && sd.baseSceneName.Equals("lobby"))
+                    {
+                        self.enableFading = false;
+                    }
+                    orig(self);
+                };
+            }
+            else
+            {
+                BanditBody.GetComponentInChildren<ModelSkinController>().skins[1].unlockableDef = null;
             }
             RegisterLanguageTokens();
 
@@ -163,15 +180,6 @@ namespace BanditReloaded
             item.outroFlavorToken = "BANDITRELOADED_OUTRO_FLAVOR";
             ModContentPack.survivorDefs.Add(item);
             ModContentPack.banditReloadedSurvivor = item;
-
-            /*On.RoR2.SkillLocator.ResetSkills += (orig, self) =>
-            {
-                orig(self);
-                if (self.gameObject.GetComponentInParent<CharacterBody>().baseNameToken == "BANDITRELOADED_BODY_NAME")
-                {
-                    Util.PlaySound("Play_BanditReloaded_reset", self.gameObject);
-                }
-            };*/
 
             TakeDamage.AddHook();
             RecalculateStats.AddHook();
@@ -198,7 +206,7 @@ namespace BanditReloaded
                     Blast.attackSoundString = "Play_bandit2_m1_rifle";
                     break;
             }
-            Blast.damageCoefficient = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Damage"), 2.6f, new ConfigDescription("How much damage Blast deals.")).Value;
+            Blast.damageCoefficient = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Damage"), 2.5f, new ConfigDescription("How much damage Blast deals.")).Value;
             Blast.baseMaxDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Fire Rate"), 0.3f, new ConfigDescription("Time between shots.")).Value;
             Blast.baseMinDuration = base.Config.Bind<float>(new ConfigDefinition("10 - Primary - Blast", "Min Duration"), 0.2f, new ConfigDescription("How soon you can fire another shot if you mash.")).Value;
             Blast.penetrateEnemies = base.Config.Bind<bool>(new ConfigDefinition("10 - Primary - Blast", "Penetrate Enemies"), true, new ConfigDescription("Shots pierce enemies.")).Value;
@@ -215,7 +223,7 @@ namespace BanditReloaded
             Scatter.pelletCount = base.Config.Bind<uint>(new ConfigDefinition("11 - Primary - Scatter", "Pellets"), 8, new ConfigDescription("How many pellets Scatter shoots.")).Value;
             Scatter.procCoefficient = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Proc Coefficient"), 0.75f, new ConfigDescription("Affects the chance and power of each pellet's procs.")).Value;
             Scatter.baseMaxDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Fire Rate"), 0.625f, new ConfigDescription("Time between shots.")).Value;
-            Scatter.baseMinDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Min Duration"), 0.625f, new ConfigDescription("How soon you can fire another shot if you mash.")).Value;
+            Scatter.baseMinDuration = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Min Duration"), 0.416f, new ConfigDescription("How soon you can fire another shot if you mash.")).Value;
             Scatter.penetrateEnemies = base.Config.Bind<bool>(new ConfigDefinition("11 - Primary - Scatter", "Penetrate Enemies"), true, new ConfigDescription("Shots pierce enemies.")).Value;
             Scatter.bulletRadius = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Shot Radius"), 0.4f, new ConfigDescription("How wide Scatter's pellets are.")).Value;
             Scatter.force = base.Config.Bind<float>(new ConfigDefinition("11 - Primary - Scatter", "Force"), 200f, new ConfigDescription("Push force per pellet.")).Value;
@@ -258,12 +266,12 @@ namespace BanditReloaded
             CastSmokescreenNoDelay.minimumStateDuration = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Minimum Duration"), 0.3f, new ConfigDescription("Minimum amount of time Smokebomb lasts for.")).Value;
             CastSmokescreenNoDelay.nonLethal = base.Config.Bind<bool>(new ConfigDefinition("30 - Utility - Smokebomb", "Nonlethal"), true, new ConfigDescription("Prevents Smokebomb from landing the killing blow on enemies.")).Value;
             CastSmokescreenNoDelay.procCoefficient = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Proc Coefficient"), 0.5f, new ConfigDescription("Affects the chance and power of Smokebomb's procs.")).Value;
-            cloakCooldown = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Cooldown"), 8f, new ConfigDescription("How long Smokebomb takes to recharge.")).Value;
+            cloakCooldown = base.Config.Bind<float>(new ConfigDefinition("30 - Utility - Smokebomb", "Cooldown"), 9f, new ConfigDescription("How long Smokebomb takes to recharge.")).Value;
             cloakStock = base.Config.Bind<int>(new ConfigDefinition("30 - Utility - Smokebomb", "Stock"), 1, new ConfigDescription("How many charges Smokebomb has.")).Value;
 
+            GracePeriodComponent.graceDuration = base.Config.Bind<float>(new ConfigDefinition("40 - Special Settings", "Grace Period Duration*"), 0.5f, new ConfigDescription("How long the cooldown reset grace period lasts.")).Value;
             TakeDamage.specialDebuffBonus = base.Config.Bind<float>(new ConfigDefinition("40 - Special Settings", "Special Debuff Bonus Multiplier*"), 0.5f, new ConfigDescription("Multiplier for how big the debuff damage bonus should be for Bandit's specials.")).Value;
-
-            TakeDamage.specialExecuteThreshold = base.Config.Bind<float>(new ConfigDefinition("40 - Special Settings", "Special Execute Threshold*"), 0.15f, new ConfigDescription("Bandit's Specials instakill enemies that fall below this HP percentage. 0 = 0%, 1 = 100%")).Value;
+            TakeDamage.specialExecuteThreshold = base.Config.Bind<float>(new ConfigDefinition("40 - Special Settings", "Special Execute Threshold*"), 0.1f, new ConfigDescription("Bandit's Specials instakill enemies that fall below this HP percentage. 0 = 0%, 1 = 100%")).Value;
             TakeDamage.specialExecuteBosses = base.Config.Bind<bool>(new ConfigDefinition("40 - Special Settings", "Special Execute Bosses*"), true, new ConfigDescription("Allow bosses to be executed by Bandit's Specials if Execute is enabled.")).Value;
 
             FireLightsOut.damageCoefficient = base.Config.Bind<float>(new ConfigDefinition("41 - Special - Lights Out", "Damage"), 6f, new ConfigDescription("How much damage Lights Out deals.")).Value;

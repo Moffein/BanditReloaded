@@ -181,36 +181,37 @@ namespace BanditReloaded.Hooks
                             {
                                 self.body.AddTimedBuff(ModContentPack.skullBuff, 3f);
                             }
-                            self.body.AddTimedBuff(ModContentPack.lightsOutBuff, GracePeriodComponent.graceDuration);
+                            self.body.AddTimedBuff(ModContentPack.lightsOutBuff, resetDuration);
 
                             if (graceComponent && resetDuration > 0f)
                             {
                                 graceComponent.AddTimer(attackerCB, damageInfo.damageType, resetDuration);
                             }
+                        }
+                    }
 
-                            if (specialExecuteThreshold > 0f)
+                    if (self.body.HasBuff(ModContentPack.lightsOutBuff) && specialExecuteThreshold > 0f)
+                    {
+                        if (((self.body.bodyFlags & CharacterBody.BodyFlags.ImmuneToExecutes) == 0 && !self.body.isChampion) || specialExecuteBosses)
+                        {
+                            float executeThreshold = specialExecuteThreshold;
+                            if (self.body.isElite)
                             {
-                                if (((self.body.bodyFlags & CharacterBody.BodyFlags.ImmuneToExecutes) == 0 && !self.body.isChampion) || specialExecuteBosses)
-                                {
-                                    float executeThreshold = specialExecuteThreshold;
-                                    if (self.body.isElite)
-                                    {
-                                        executeThreshold += damageInfo.inflictor.GetComponent<CharacterBody>().executeEliteHealthFraction;
-                                    }
+                                executeThreshold += damageInfo.inflictor.GetComponent<CharacterBody>().executeEliteHealthFraction;
+                            }
 
-                                    if (self.alive && (self.combinedHealthFraction < executeThreshold))
-                                    {
-                                        damageInfo.damage = self.combinedHealth / 2f + 1f;
-                                        damageInfo.damageType = (DamageType.ResetCooldownsOnKill | DamageType.BypassArmor);
-                                        damageInfo.procCoefficient = 0f;
-                                        damageInfo.crit = true;
-                                        damageInfo.damageColorIndex = DamageColorIndex.WeakPoint;
-                                        orig(self, damageInfo);
-                                    }
-                                }
+                            if (self.alive && (self.combinedHealthFraction < executeThreshold))
+                            {
+                                damageInfo.damage = self.combinedHealth / 2f + 1f;
+                                damageInfo.damageType = (DamageType.ResetCooldownsOnKill | DamageType.BypassArmor);
+                                damageInfo.procCoefficient = 0f;
+                                damageInfo.crit = true;
+                                damageInfo.damageColorIndex = DamageColorIndex.WeakPoint;
+                                orig(self, damageInfo);
                             }
                         }
                     }
+
                 }
             };
         }
