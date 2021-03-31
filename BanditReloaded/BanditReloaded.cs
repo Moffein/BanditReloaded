@@ -85,7 +85,7 @@ namespace BanditReloaded
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_PASSIVE_DESCRIPTION", "The Bandit <style=cIsUtility>instantly reloads</style> his primary when using other skills.");
 
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_OUTRO_FLAVOR", "..and so he left, with his pyrrhic plunder.");
-            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_MAIN_ENDING_ESCAPE_FAILURE_FLAVOR", "..and so he vanished, unable to escape his crimes.");
+            EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_MAIN_ENDING_ESCAPE_FAILURE_FLAVOR", "..and so he vanished, unable to escape his past.");
 
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_BODY_NAME", "Classic Bandit");
             EnigmaticThunder.Modules.Languages.Add("BANDITRELOADED_BODY_SUBTITLE", "Wanted Dead or Alive");
