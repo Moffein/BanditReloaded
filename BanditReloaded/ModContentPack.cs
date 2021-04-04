@@ -90,7 +90,7 @@ namespace BanditReloaded
             {
                 var bytes = new byte[bankStream.Length];
                 bankStream.Read(bytes, 0, bytes.Length);
-                EnigmaticThunder.Modules.Sounds.SoundBanks.Add(bytes);
+                R2API.SoundAPI.SoundBanks.Add(bytes);
             }
         }
     }

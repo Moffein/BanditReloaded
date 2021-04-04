@@ -195,10 +195,16 @@ namespace BanditReloaded.Hooks
                         if (((self.body.bodyFlags & CharacterBody.BodyFlags.ImmuneToExecutes) == 0 && !self.body.isChampion) || specialExecuteBosses)
                         {
                             float executeThreshold = specialExecuteThreshold;
+                            float executeToAdd = 0f;
                             if (self.body.isElite)
                             {
-                                executeThreshold += damageInfo.inflictor.GetComponent<CharacterBody>().executeEliteHealthFraction;
+                               executeToAdd = damageInfo.inflictor.GetComponent<CharacterBody>().executeEliteHealthFraction;
                             }
+                            if (self.isInFrozenState && executeToAdd < 0.3f)
+                            {
+                                executeToAdd = 0.3f;
+                            }
+                            executeThreshold += executeToAdd;
 
                             if (self.alive && (self.combinedHealthFraction < executeThreshold))
                             {
