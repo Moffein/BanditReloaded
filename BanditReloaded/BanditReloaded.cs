@@ -18,13 +18,14 @@ using UnityEngine.Networking;
 using System.Collections;
 using R2API.Utils;
 using R2API;
+using RoR2.ContentManagement;
 
 namespace BanditReloaded
 {
     [BepInDependency("com.bepis.r2api")]
     [R2API.Utils.R2APISubmoduleDependency(nameof(LanguageAPI), nameof(LoadoutAPI), nameof(PrefabAPI), nameof(SoundAPI))]
     [BepInDependency("com.DestroyedClone.AncientScepter", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("com.Moffein.BanditReloaded_v4", "Bandit Reloaded v4", "4.0.2")]
+    [BepInPlugin("com.Moffein.BanditReloaded_v4", "Bandit Reloaded v4", "4.0.3")]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     class BanditReloaded : BaseUnityPlugin
     {
@@ -191,7 +192,11 @@ namespace BanditReloaded
             RecalculateStats.AddHook();
             CloakDamage.AddHook();
 
-            ModContentPack.CreateContentPack();
+            ContentManager.collectContentPackProviders += ContentManager_collectContentPackProviders;
+        }
+        private void ContentManager_collectContentPackProviders(ContentManager.AddContentPackProviderDelegate addContentPackProvider)
+        {
+            addContentPackProvider(new ModContentPack());
         }
 
         private void ReadConfig()

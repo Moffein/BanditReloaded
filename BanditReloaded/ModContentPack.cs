@@ -7,12 +7,14 @@ using UnityEngine;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using System.Reflection;
+using RoR2.ContentManagement;
+using System.Collections;
 
 namespace BanditReloaded
 {
-    public class ModContentPack
+    public class ModContentPack : IContentPackProvider
     {
-        internal static ContentPack contentPack;
+        internal static ContentPack contentPack = new ContentPack();
 
         public static List<GameObject> bodyPrefabs = new List<GameObject>();
         public static List<BuffDef> buffDefs = new List<BuffDef>();
@@ -37,47 +39,7 @@ namespace BanditReloaded
 
         public static SurvivorDef banditReloadedSurvivor;
 
-        public static void CreateContentPack()
-        {
-            IL.RoR2.BuffCatalog.Init += FixBuffCatalog;
-
-            contentPack = new ContentPack()
-            {
-                bodyPrefabs = bodyPrefabs.ToArray(),
-                buffDefs = buffDefs.ToArray(),
-                effectDefs = effectDefs.ToArray(),
-                entityStateTypes = entityStates.ToArray(),
-                masterPrefabs = masterPrefabs.ToArray(),
-                projectilePrefabs = projectilePrefabs.ToArray(),
-                skillDefs = skillDefs.ToArray(),
-                skillFamilies = skillFamilies.ToArray(),
-                survivorDefs = survivorDefs.ToArray(),
-                unlockableDefs = unlockableDefs.ToArray()
-            };
-
-            On.RoR2.ContentManager.SetContentPacks += AddContent;
-        }
-
-        private static void AddContent(On.RoR2.ContentManager.orig_SetContentPacks orig, List<ContentPack> newContentPacks)
-        {
-            newContentPacks.Add(contentPack);
-            orig(newContentPacks);
-        }
-
-        //Credits to Aaron (Windows10CE#8553). Remove this once API updates.
-        internal static void FixBuffCatalog(ILContext il)
-        {
-            ILCursor c = new ILCursor(il);
-
-            if (!c.Next.MatchLdsfld(typeof(RoR2Content.Buffs), nameof(RoR2Content.Buffs.buffDefs)))
-            {
-                Debug.Log("Buff Catalog is already fixed!");
-                return;
-            }
-
-            c.Remove();
-            c.Emit(OpCodes.Ldsfld, typeof(ContentManager).GetField(nameof(ContentManager.buffDefs)));
-        }
+        public string identifier => "BanditReloaded.content";
 
         public static void LoadResources()
         {
@@ -92,6 +54,33 @@ namespace BanditReloaded
                 bankStream.Read(bytes, 0, bytes.Length);
                 R2API.SoundAPI.SoundBanks.Add(bytes);
             }
+        }
+
+        public IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
+        {
+            contentPack.bodyPrefabs.Add(bodyPrefabs.ToArray());
+            contentPack.buffDefs.Add(buffDefs.ToArray());
+            contentPack.effectDefs.Add(effectDefs.ToArray());
+            contentPack.entityStateTypes.Add(entityStates.ToArray());
+            contentPack.masterPrefabs.Add(masterPrefabs.ToArray());
+            contentPack.projectilePrefabs.Add(projectilePrefabs.ToArray());
+            contentPack.skillDefs.Add(skillDefs.ToArray());
+            contentPack.skillFamilies.Add(skillFamilies.ToArray());
+            contentPack.survivorDefs.Add(survivorDefs.ToArray());
+            contentPack.unlockableDefs.Add(unlockableDefs.ToArray());
+            yield break;
+        }
+
+        public IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
+        {
+            ContentPack.Copy(contentPack, args.output);
+            yield break;
+        }
+
+        public IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
+        {
+            args.ReportProgress(1f);
+            yield break;
         }
     }
 }
