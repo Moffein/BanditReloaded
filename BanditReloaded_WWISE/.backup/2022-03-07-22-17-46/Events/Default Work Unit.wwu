@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" SchemaVersion="89">
+	<Events>
+		<WorkUnit Name="Default Work Unit" ID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" PersistMode="Standalone">
+			<ChildrenList>
+				<Event Name="Play_BanditReloaded_blast" ID="{E12FA697-5EA7-4B6D-BAFD-19D24CD9B163}">
+					<ChildrenList>
+						<Action Name="" ID="{E4646BF9-DFEB-4B42-8E36-6E9B801083CD}" ShortID="267875465">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="dreiss_noisereduced" ID="{61977119-D00E-40F4-8661-04D8A0AF4482}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_BanditReloaded_blast_classic" ID="{8093BA16-20A6-4FF7-96D3-34A4B073E96D}">
+					<ChildrenList>
+						<Action Name="" ID="{DC43CD6E-D8D8-4016-AF20-32506F02DA65}" ShortID="861385326">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="wCowboyShoot1" ID="{5D764D2F-ED90-4EC2-9EFF-F76CDD0023BA}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_BanditReloaded_cloakdamage" ID="{B81697BF-44F6-4F3D-9754-590B6D100995}">
+					<ChildrenList>
+						<Action Name="" ID="{7F8F1BCB-DDE7-4A4A-A7C5-E08FC37E4147}" ShortID="420623039">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="sniperreload" ID="{64F8364E-5767-410D-8C85-582FDECD4D70}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_BanditReloaded_dynamite" ID="{B58F157E-4513-42FC-9C8F-7F869DAFA789}">
+					<ChildrenList>
+						<Action Name="" ID="{B9C4631E-005F-4D00-B02D-E6A899C1B834}" ShortID="296687410">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="dynamite" ID="{DEB99864-EFF1-4473-A2EC-DB237E9DD1B1}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_BanditReloaded_dynamite_toss" ID="{BF157714-8E3E-4E37-954A-1C1988EA4F44}">
+					<ChildrenList>
+						<Action Name="" ID="{6A5DC3C6-13E8-4D98-9778-0E3EDB16DDA1}" ShortID="663818156">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="wCowboyShoot2" ID="{129B0615-70C5-4D88-ACB7-6EA6303ABA7A}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_BanditReloaded_shotgun" ID="{0ECEAB10-BD1A-4612-8295-FD630745F78B}">
+					<ChildrenList>
+						<Action Name="" ID="{B25D2CB1-26ED-46BE-9671-2ECFEABECBCF}" ShortID="758845460">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="shotgun2" ID="{66319A47-4A19-43E4-AD15-7442131700A8}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_BanditReloaded_burn" ID="{53999E23-7AC1-48F6-AB20-87948524D1A6}">
+					<ChildrenList>
+						<Action Name="" ID="{15DB3BA8-A46F-4FE6-9FF5-305A15EB13D1}" ShortID="958366251">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="sndBurn" ID="{82B539FE-DD4D-4361-A306-F706E580E513}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_MoffeinBanditDynamite_toss" ID="{346DE35D-DE91-4C5B-AC90-E3EB29207C6A}">
+					<ChildrenList>
+						<Action Name="" ID="{F2B78EE6-0351-4BD1-B52F-4412FA22A9B0}" ShortID="1006235276">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="wCowboyShoot2" ID="{129B0615-70C5-4D88-ACB7-6EA6303ABA7A}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_MoffeinBanditDynamite_explode" ID="{D17BF2A1-282F-4447-A571-10CE1A5D838B}">
+					<ChildrenList>
+						<Action Name="" ID="{27C3105C-F007-4CCC-A3A5-2955EE5AABAB}" ShortID="833131039">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="dynamite" ID="{DEB99864-EFF1-4473-A2EC-DB237E9DD1B1}" WorkUnitID="{E70D849B-3F54-48D5-8548-8C161C407EBD}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+			</ChildrenList>
+		</WorkUnit>
+	</Events>
+</WwiseDocument>

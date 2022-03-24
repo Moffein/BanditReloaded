@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="12" SoundbankVersion="135">
+	<RootPaths>
+		<ProjectRoot>C:\Users\Node\Documents\WwiseProjects\BanditReloaded\</ProjectRoot>
+		<SourceFilesRoot>C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\</SourceFilesRoot>
+		<SoundBanksRoot>C:\Users\Node\Documents\WwiseProjects\BanditReloaded\GeneratedSoundBanks\Windows\</SoundBanksRoot>
+		<ExternalSourcesInputFile></ExternalSourcesInputFile>
+		<ExternalSourcesOutputRoot>C:\Users\Node\Documents\WwiseProjects\BanditReloaded\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
+	</RootPaths>
+	<DialogueEvents/>
+	<StreamedFiles/>
+	<MediaFilesNotInAnyBank/>
+	<SoundBanks>
+		<SoundBank Id="1117006007" Language="SFX" Hash="2442978604">
+			<ObjectPath>\SoundBanks\Default Work Unit\BanditReloaded</ObjectPath>
+			<ShortName>BanditReloaded</ShortName>
+			<Path>BanditReloaded.bnk</Path>
+			<IncludedEvents>
+				<Event Id="4119728495" Name="Play_BanditReloaded_blast" ObjectPath="\Events\Default Work Unit\Play_BanditReloaded_blast">
+					<IncludedMemoryFiles>
+						<File Id="958280513" Language="SFX">
+							<ShortName>dreiss_noisereduced.wav</ShortName>
+							<Path>SFX\dreiss_noisereduced_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="2988588030" Name="Play_BanditReloaded_blast_classic" ObjectPath="\Events\Default Work Unit\Play_BanditReloaded_blast_classic">
+					<IncludedMemoryFiles>
+						<File Id="1009156926" Language="SFX">
+							<ShortName>wCowboyShoot1.wav</ShortName>
+							<Path>SFX\wCowboyShoot1_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1777084748" Name="Play_BanditReloaded_burn" ObjectPath="\Events\Default Work Unit\Play_BanditReloaded_burn">
+					<IncludedMemoryFiles>
+						<File Id="700805901" Language="SFX">
+							<ShortName>sndBurn.wav</ShortName>
+							<Path>SFX\sndBurn_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="4120053970" Name="Play_BanditReloaded_cloakdamage" ObjectPath="\Events\Default Work Unit\Play_BanditReloaded_cloakdamage">
+					<IncludedMemoryFiles>
+						<File Id="759020727" Language="SFX">
+							<ShortName>sniperreload.wav</ShortName>
+							<Path>SFX\sniperreload_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1613342478" Name="Play_BanditReloaded_dynamite" ObjectPath="\Events\Default Work Unit\Play_BanditReloaded_dynamite">
+					<IncludedMemoryFiles>
+						<File Id="385790418" Language="SFX">
+							<ShortName>dynamite.wav</ShortName>
+							<Path>SFX\dynamite_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1247057928" Name="Play_BanditReloaded_dynamite_toss" ObjectPath="\Events\Default Work Unit\Play_BanditReloaded_dynamite_toss">
+					<IncludedMemoryFiles>
+						<File Id="656617101" Language="SFX">
+							<ShortName>wCowboyShoot2.wav</ShortName>
+							<Path>SFX\wCowboyShoot2_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1930765899" Name="Play_BanditReloaded_shotgun" ObjectPath="\Events\Default Work Unit\Play_BanditReloaded_shotgun">
+					<IncludedMemoryFiles>
+						<File Id="707683889" Language="SFX">
+							<ShortName>shotgun2.wav</ShortName>
+							<Path>SFX\shotgun2_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+			</IncludedEvents>
+			<GameParameters>
+				<GameParameter Id="3673881719" Name="Volume_SFX" ObjectPath="\Game Parameters\Default Work Unit\Volume_SFX"/>
+			</GameParameters>
+		</SoundBank>
+		<SoundBank Id="1355168291" Language="SFX" Hash="1891520505">
+			<ObjectPath>Init</ObjectPath>
+			<ShortName>Init</ShortName>
+			<Path>Init.bnk</Path>
+		</SoundBank>
+		<SoundBank Id="2061674682" Language="SFX" Hash="2843034183">
+			<ObjectPath>\SoundBanks\Default Work Unit\BanditDynamite</ObjectPath>
+			<ShortName>BanditDynamite</ShortName>
+			<Path>BanditDynamite.bnk</Path>
+			<IncludedEvents>
+				<Event Id="2094736807" Name="Play_MoffeinBanditDynamite_explode" ObjectPath="\Events\Default Work Unit\Play_MoffeinBanditDynamite_explode">
+					<IncludedMemoryFiles>
+						<File Id="385790418" Language="SFX">
+							<ShortName>dynamite.wav</ShortName>
+							<Path>SFX\dynamite_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="3269198925" Name="Play_MoffeinBanditDynamite_toss" ObjectPath="\Events\Default Work Unit\Play_MoffeinBanditDynamite_toss">
+					<IncludedMemoryFiles>
+						<File Id="656617101" Language="SFX">
+							<ShortName>wCowboyShoot2.wav</ShortName>
+							<Path>SFX\wCowboyShoot2_0D5756A9.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+			</IncludedEvents>
+			<GameParameters>
+				<GameParameter Id="3673881719" Name="Volume_SFX" ObjectPath="\Game Parameters\Default Work Unit\Volume_SFX"/>
+			</GameParameters>
+		</SoundBank>
+	</SoundBanks>
+</SoundBanksInfo>

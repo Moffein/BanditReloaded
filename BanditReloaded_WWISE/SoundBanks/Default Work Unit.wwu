@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{FC8B4FD7-9240-47EF-A083-30618AB10437}" SchemaVersion="97">
+	<SoundBanks>
+		<WorkUnit Name="Default Work Unit" ID="{FC8B4FD7-9240-47EF-A083-30618AB10437}" PersistMode="Standalone">
+			<ChildrenList>
+				<SoundBank Name="BanditReloaded" ID="{879B9CD4-DF77-44CE-A246-900E6C20A6B6}">
+					<ObjectInclusionList>
+						<ObjectRef Name="Play_BanditReloaded_dynamite" ID="{B58F157E-4513-42FC-9C8F-7F869DAFA789}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BanditReloaded_shotgun" ID="{0ECEAB10-BD1A-4612-8295-FD630745F78B}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BanditReloaded_burn" ID="{53999E23-7AC1-48F6-AB20-87948524D1A6}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BanditReloaded_blast" ID="{E12FA697-5EA7-4B6D-BAFD-19D24CD9B163}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BanditReloaded_dynamite_toss" ID="{BF157714-8E3E-4E37-954A-1C1988EA4F44}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BanditReloaded_cloakdamage" ID="{B81697BF-44F6-4F3D-9754-590B6D100995}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BanditReloaded_blast_classic" ID="{8093BA16-20A6-4FF7-96D3-34A4B073E96D}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="BanditDynamite" ID="{D4FE96AB-7EE0-4419-8135-0B2B5D52C1F6}">
+					<ObjectInclusionList>
+						<ObjectRef Name="Play_MoffeinBanditDynamite_explode" ID="{D17BF2A1-282F-4447-A571-10CE1A5D838B}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_MoffeinBanditDynamite_toss" ID="{346DE35D-DE91-4C5B-AC90-E3EB29207C6A}" WorkUnitID="{90A3FEAB-0B91-45F0-B3AA-10BCA49E86A8}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+			</ChildrenList>
+		</WorkUnit>
+	</SoundBanks>
+</WwiseDocument>

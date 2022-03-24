@@ -1,0 +1,51 @@
+ManifestFileVersion: 0
+CRC: 3449094852
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: bfe89da773a8ba4be402e97eea6f9be7
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 7bd2e1b4ce917dd07fb917c3f898b362
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 54
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/Resources/skill2.png
+- Assets/Resources/skill1a.png
+- Assets/Resources/quickdraw.png
+- Assets/Resources/skill2a.png
+- Assets/Resources/dynamite_red.png
+- Assets/Resources/texBanditIcon.png
+- Assets/Resources/skill1.png
+- Assets/Resources/DynamiteBundle.prefab
+- Assets/Resources/skill4.png
+- Assets/Resources/skill3a.png
+- Assets/Resources/reu_scepter.png
+- Assets/Resources/DynamiteStick.prefab
+- Assets/Resources/skill3.png
+- Assets/Resources/lo_scepter.png
+Dependencies: []

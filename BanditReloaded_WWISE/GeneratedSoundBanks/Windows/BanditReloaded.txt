@@ -1,0 +1,21 @@
+Event	ID	Name			Wwise Object Path	Notes
+	1247057928	Play_BanditReloaded_dynamite_toss			\Default Work Unit\Play_BanditReloaded_dynamite_toss	
+	1613342478	Play_BanditReloaded_dynamite			\Default Work Unit\Play_BanditReloaded_dynamite	
+	1777084748	Play_BanditReloaded_burn			\Default Work Unit\Play_BanditReloaded_burn	
+	1930765899	Play_BanditReloaded_shotgun			\Default Work Unit\Play_BanditReloaded_shotgun	
+	2988588030	Play_BanditReloaded_blast_classic			\Default Work Unit\Play_BanditReloaded_blast_classic	
+	4119728495	Play_BanditReloaded_blast			\Default Work Unit\Play_BanditReloaded_blast	
+	4120053970	Play_BanditReloaded_cloakdamage			\Default Work Unit\Play_BanditReloaded_cloakdamage	
+
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	3673881719	Volume_SFX			\Default Work Unit\Volume_SFX	
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	385790418	dynamite	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\dynamite_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\dynamite		26786
+	656617101	wCowboyShoot2	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\wCowboyShoot2_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\wCowboyShoot2		4549
+	700805901	sndBurn	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\sndBurn_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\sndBurn		4928
+	707683889	shotgun2	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\shotgun2_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\shotgun2		20561
+	759020727	sniperreload	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\sniperreload_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\sniperreload		6044
+	958280513	dreiss_noisereduced	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\dreiss_noisereduced_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\dreiss_noisereduced		14125
+	1009156926	wCowboyShoot1	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\wCowboyShoot1_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\wCowboyShoot1		7716
+

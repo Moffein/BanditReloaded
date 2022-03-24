@@ -1,0 +1,11 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2094736807	Play_MoffeinBanditDynamite_explode			\Default Work Unit\Play_MoffeinBanditDynamite_explode	
+	3269198925	Play_MoffeinBanditDynamite_toss			\Default Work Unit\Play_MoffeinBanditDynamite_toss	
+
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	3673881719	Volume_SFX			\Default Work Unit\Volume_SFX	
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	385790418	dynamite	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\dynamite_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\dynamite		26786
+	656617101	wCowboyShoot2	C:\Users\Node\Documents\WwiseProjects\BanditReloaded\.cache\Windows\SFX\wCowboyShoot2_0D5756A9.wem		\Actor-Mixer Hierarchy\Default Work Unit\Master Mixer\SFX Mixer\gun mixer\wCowboyShoot2		4549
+
